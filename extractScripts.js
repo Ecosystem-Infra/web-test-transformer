@@ -1,8 +1,10 @@
 const fs          = require("fs");
 const htmlparser2 = require("htmlparser2");
 
-// TODO (dmorejon): add comment here describing function
-// espeically the temporary files naming, location, and structure
+// extractScriptsFromHTML takes a string filePath: a path to the HTML test
+// file that you want to extract the javascript from within <script> tags.
+// It creates a directory "tempJsScripts" in the same directory as this file,
+// then puts the .js scripts extracted in the new dir, named/numbered script{0}_{test filename}.js 
 function extractScriptsFromHTML(filePath) {
     let scriptCount = 0;
     let inScript = false;
@@ -17,9 +19,6 @@ function extractScriptsFromHTML(filePath) {
             onopentag(name, attribs) {
                 if (name === "script") {
                     inScript = true;
-                    console.log("Encountered script open");
-                    console.log("attribs:", attribs);
-                    // TODO: adjust attribute here?
                     currentFile = "./tempJsScripts/script" + scriptCount + "_" + fileNameFromPath(filePath) + ".js";
                     // Creates a file, overwriting any existing file, with empty contents.
                     fs.writeFile(currentFile, '', function (err) {
@@ -27,6 +26,7 @@ function extractScriptsFromHTML(filePath) {
                     });
                 }
             },
+
             ontext(text) {
                 if (inScript) {
                     fs.appendFile(currentFile, text, function (err) {
@@ -34,6 +34,7 @@ function extractScriptsFromHTML(filePath) {
                     });
                 }
             },
+
             onclosetag(tagname) {
                 if (tagname === "script") {
                     inScript = false;
