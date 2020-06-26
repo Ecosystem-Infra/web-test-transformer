@@ -1,0 +1,25 @@
+{
+  "name": "webtesttransfomer",
+  "version": "1.0.0",
+  "description": "Ecosystem Infra tool to transform legacy tests using js-test.js to WPT tests using harnesstest.js",
+  "main": "extractScripts.js",
+  "dependencies": {
+    "htmlparser2": "^4.1.0"
+  },
+  "devDependencies": {
+    "mocha": "^8.0.1"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ecosystem-Infra/web-test-transformer.git"
+  },
+  "author": "dmorejon@google.com",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/Ecosystem-Infra/web-test-transformer/issues"
+  },
+  "homepage": "https://github.com/Ecosystem-Infra/web-test-transformer#readme"
+}
