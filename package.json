@@ -4,7 +4,8 @@
   "description": "Ecosystem Infra tool to transform legacy tests using js-test.js to WPT tests using harnesstest.js",
   "main": "extractScripts.js",
   "dependencies": {
-    "htmlparser2": "^4.1.0"
+    "htmlparser2": "^4.1.0",
+    "tmp": "^0.2.1"
   },
   "devDependencies": {
     "mocha": "^8.0.1"
