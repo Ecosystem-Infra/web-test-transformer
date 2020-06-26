@@ -30,17 +30,13 @@ function extractScriptsFromHTML(filePath, tempDir=null) {
                     currentFile = tempDir.name + newFileName; 
                     files.push(currentFile);
                     // Creates a file, overwriting any existing file, with empty contents.
-                    fs.writeFile(currentFile, '', function (err) {
-                        if (err) { throw err; }
-                    });
+                    fs.writeFileSync(currentFile, '');
                 }
             },
 
             ontext(text) {
                 if (inScript) {
-                    fs.appendFile(currentFile, text, function (err) {
-                        if (err) { throw err; }
-                    });
+                    fs.appendFileSync(currentFile, text);
                 }
             },
 
