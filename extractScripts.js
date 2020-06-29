@@ -64,8 +64,4 @@ function fileNameFromPath(filePath) {
     return fileNameWithExtension.split(".")[0] 
 }
 
-//let filePath = "./example_legacy_tests/file-list-test.html";
-//let filesWritten = extractScriptsFromHTML(filePath);
-//console.log("Wrote ", filesWritten);
-
 module.exports = extractScriptsFromHTML;
