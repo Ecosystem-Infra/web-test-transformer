@@ -1,3 +1,4 @@
+'use strict';
 const assert = require('assert');
 const fs = require('fs');
 const tmp = require('tmp');
@@ -6,7 +7,7 @@ const extractScriptsFromHTML = require('../src/extractScripts.js');
 
 // IMPORTANT: if file naming convention changes in file, change this function.
 function expectedResults(fileName, dirName, numberOfScriptTags) {
-  const referenceBase = './test/referenceFiles/ref_';
+  const referenceBase = './test/testdata/reference/ref_';
   const files = [];
   const referenceFiles = [];
   for (let i = 0; i < numberOfScriptTags; i++) {
@@ -28,13 +29,15 @@ describe('#extractScriptsFromHTML()', function() {
   });
 
   context('2 sets of <script> tags- file-list-test.html', function() {
-    const testPath = './example_legacy_tests/file-list-test.html';
+    const testPath = './test/testdata/input/file-list-test.html';
     const testFileName = 'file-list-test';
     const testScriptCount = 2;
 
     it('should return correct list of files', function() {
       const actualFileList = extractScriptsFromHTML(testPath, tempDir);
       const expected = expectedResults(testFileName, tempDir.name, testScriptCount);
+      // If this assert fails, be sure to check that the
+      // naming convention in expectedResults() above matches that in extractScripts.js
       assert.deepEqual(actualFileList, expected.fileList);
     });
 

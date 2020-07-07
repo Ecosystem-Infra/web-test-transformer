@@ -1,1 +1,2 @@
-**/referenceFiles/*.js
+**/test/testdata/reference/*.js
+**/tempJsScripts*

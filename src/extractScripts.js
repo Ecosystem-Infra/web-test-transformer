@@ -17,7 +17,7 @@ const TEMP_DIR = 'tempJsScripts';
  * @param {string} filePath - path to the HTML test file to extract
  * javascript from within <script> tags.
  * @param {tmp object} [tempDir=null] - OPTIONAL directory to put
- * new .js files in. If null, will create one.
+ * new .js files in. If null, will create one in the cwd with prefix TEMP_DIR.
  * @returns {[string]} - the full path of the files that were written.
  */
 function extractScriptsFromHTML(filePath, tempDir=null) {

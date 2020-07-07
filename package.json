@@ -1,7 +1,7 @@
 {
   "name": "webtesttransfomer",
   "version": "1.0.0",
-  "description": "Ecosystem Infra tool to transform legacy tests using js-test.js to WPT tests using harnesstest.js",
+  "description": "Ecosystem Infra tool to transform legacy tests using js-test.js to WPT tests using testharness.js",
   "main": "extractScripts.js",
   "dependencies": {
     "htmlparser2": "^4.1.0",
