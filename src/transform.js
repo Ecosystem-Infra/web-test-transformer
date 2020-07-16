@@ -1,10 +1,10 @@
 'use strict';
-const b = require('@babel/core');
+const babel = require('@babel/core');
 const fs = require('fs');
 
 // addSetupNode adds the setup() call to the beginning of the script.
 function addSetupNode() {
-  const setupNode = b.template.statement(`
+  const setupNode = babel.template.statement(`
     setup({single_test: true, explicit_done: false});
   `)();
   return {
@@ -28,8 +28,9 @@ function transformShouldBeBool() {
       CallExpression(path) {
         if (transformBoolMap.hasOwnProperty(path.node.callee.name)) {
           path.node.callee.name = transformBoolMap[path.node.callee.name];
+
           const newArgument =
-            b.template.expression(path.node.arguments[0].value)();
+            babel.template.expression(path.node.arguments[0].value)();
           path.node.arguments[0] = newArgument;
         }
       },
@@ -40,39 +41,39 @@ function transformShouldBeBool() {
 const transformValueMap = {
   'shouldBeNaN': {
     name: 'assert_equals',
-    value: b.types.identifier('NaN'),
+    value: babel.types.identifier('NaN'),
   },
 
   'shouldBeNull': {
     name: 'assert_equals',
-    value: b.types.nullLiteral(),
+    value: babel.types.nullLiteral(),
   },
   'shouldBeNonNull': {
     name: 'assert_not_equals',
-    value: b.types.nullLiteral(),
+    value: babel.types.nullLiteral(),
   },
 
   'shouldBeUndefined': {
     name: 'assert_equals',
-    value: b.types.identifier('undefined'),
+    value: babel.types.identifier('undefined'),
   },
   'shouldBeDefined': {
     name: 'assert_not_equals',
-    value: b.types.identifier('undefined'),
+    value: babel.types.identifier('undefined'),
   },
 
   'shouldBeZero': {
     name: 'assert_equals',
-    value: b.types.numericLiteral(0),
+    value: babel.types.numericLiteral(0),
   },
   'shouldBeNonZero': {
     name: 'assert_not_equals',
-    value: b.types.numericLiteral(0),
+    value: babel.types.numericLiteral(0),
   },
 
   'shouldBeEmptyString': {
     name: 'assert_equals',
-    value: b.types.stringLiteral(''),
+    value: babel.types.stringLiteral(''),
   },
 };
 
@@ -81,13 +82,12 @@ function transformShouldBeValue() {
     visitor: {
       CallExpression(path) {
         if (transformValueMap.hasOwnProperty(path.node.callee.name)) {
+          const newArgument0 =
+            babel.template.expression(path.node.arguments[0].value)();
           const newArgument1 = transformValueMap[path.node.callee.name].value;
+          path.node.arguments = [newArgument0, newArgument1];
 
           path.node.callee.name = transformValueMap[path.node.callee.name].name;
-
-          const newArgument0 =
-            b.template.expression(path.node.arguments[0].value)();
-          path.node.arguments = [newArgument0, newArgument1];
         }
       },
     },
@@ -106,12 +106,13 @@ function transformShouldBeComparator() {
     visitor: {
       CallExpression(path) {
         if (transformComparatorMap.hasOwnProperty(path.node.callee.name)) {
-          path.node.callee.name = transformComparatorMap[path.node.callee.name];
           const newArgument0 =
-            b.template.expression(path.node.arguments[0].value)();
+            babel.template.expression(path.node.arguments[0].value)();
           const newArgument1 =
-            b.template.expression(path.node.arguments[1].value)();
+            babel.template.expression(path.node.arguments[1].value)();
           path.node.arguments = [newArgument0, newArgument1];
+
+          path.node.callee.name = transformComparatorMap[path.node.callee.name];
         }
       },
     },
@@ -130,8 +131,9 @@ function transformShouldBeEqualToSpecific() {
       CallExpression(path) {
         if (transformEqualToMap.hasOwnProperty(path.node.callee.name)) {
           path.node.callee.name = transformEqualToMap[path.node.callee.name];
+
           const newArgument0 =
-            b.template.expression(path.node.arguments[0].value)();
+            babel.template.expression(path.node.arguments[0].value)();
           path.node.arguments[0] = newArgument0;
         }
       },
@@ -151,7 +153,7 @@ function transformSourceCodeString(sourceCode, addSetup=true) {
     pluginArray.unshift(addSetupNode);
   }
 
-  const output = b.transformSync(sourceCode, {
+  const output = babel.transformSync(sourceCode, {
     plugins: pluginArray,
   });
   return output.code;
