@@ -1,0 +1,1 @@
+shouldBe("typeof nameVar", "'string'");

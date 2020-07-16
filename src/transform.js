@@ -1,5 +1,5 @@
 'use strict';
-const b =  require('@babel/core'); 
+const b = require('@babel/core');
 const fs = require('fs');
 
 // addSetupNode adds the setup() call to the beginning of the script.
@@ -11,16 +11,16 @@ function addSetupNode() {
     visitor: {
       Program(path) {
         path.node.body.unshift(setupNode);
-      }
-    }
-  }
+      },
+    },
+  };
 }
 
 const transformBoolMap = {
-  "shouldBeTrue": "assert_true",
-  "shouldBeFalse": "assert_false",
+  'shouldBeTrue': 'assert_true',
+  'shouldBeFalse': 'assert_false',
 
-}
+};
 
 function transformShouldBeBool() {
   return {
@@ -28,7 +28,8 @@ function transformShouldBeBool() {
       CallExpression(path) {
         if (transformBoolMap.hasOwnProperty(path.node.callee.name)) {
           path.node.callee.name = transformBoolMap[path.node.callee.name];
-          const newArgument = b.template.expression(path.node.arguments[0].value)();
+          const newArgument =
+            b.template.expression(path.node.arguments[0].value)();
           path.node.arguments[0] = newArgument;
         }
       },
@@ -37,20 +38,43 @@ function transformShouldBeBool() {
 }
 
 const transformValueMap = {
-  "shouldBeNaN": { name: "assert_equals", value: b.types.identifier("NaN") },
+  'shouldBeNaN': {
+    name: 'assert_equals',
+    value: b.types.identifier('NaN'),
+  },
 
-  "shouldBeNull": { name: "assert_equals", value: b.types.nullLiteral() },
-  "shouldBeNonNull": { name: "assert_not_equals", value: b.types.nullLiteral() },
+  'shouldBeNull': {
+    name: 'assert_equals',
+    value: b.types.nullLiteral(),
+  },
+  'shouldBeNonNull': {
+    name: 'assert_not_equals',
+    value: b.types.nullLiteral(),
+  },
 
+  'shouldBeUndefined': {
+    name: 'assert_equals',
+    value: b.types.identifier('undefined'),
+  },
+  'shouldBeDefined': {
+    name: 'assert_not_equals',
+    value: b.types.identifier('undefined'),
+  },
 
-  "shouldBeUndefined": { name: "assert_equals", value: b.types.identifier("undefined") },
-  "shouldBeDefined": { name: "assert_not_equals", value: b.types.identifier("undefined") },
+  'shouldBeZero': {
+    name: 'assert_equals',
+    value: b.types.numericLiteral(0),
+  },
+  'shouldBeNonZero': {
+    name: 'assert_not_equals',
+    value: b.types.numericLiteral(0),
+  },
 
-  "shouldBeZero": { name: "assert_equals", value: b.types.numericLiteral(0) }, 
-  "shouldBeNonZero": { name: "assert_not_equals", value: b.types.numericLiteral(0) }, 
-
-  "shouldBeEmptyString": { name: "assert_equals", value: b.types.stringLiteral("") },
-}
+  'shouldBeEmptyString': {
+    name: 'assert_equals',
+    value: b.types.stringLiteral(''),
+  },
+};
 
 function transformShouldBeValue() {
   return {
@@ -61,7 +85,8 @@ function transformShouldBeValue() {
 
           path.node.callee.name = transformValueMap[path.node.callee.name].name;
 
-          const newArgument0 = b.template.expression(path.node.arguments[0].value)();
+          const newArgument0 =
+            b.template.expression(path.node.arguments[0].value)();
           path.node.arguments = [newArgument0, newArgument1];
         }
       },
@@ -70,11 +95,11 @@ function transformShouldBeValue() {
 }
 
 const transformComparatorMap = {
-  "shouldBe": "assert_equals",
-  "shouldNotBe": "assert_not_equals",
-  "shouldBeGreaterThan": "assert_greater_than",
-  "shouldBeGreaterThanOrEqualTo": "assert_greater_than_equal",
-}
+  'shouldBe': 'assert_equals',
+  'shouldNotBe': 'assert_not_equals',
+  'shouldBeGreaterThan': 'assert_greater_than',
+  'shouldBeGreaterThanOrEqualTo': 'assert_greater_than_equal',
+};
 
 function transformShouldBeComparator() {
   return {
@@ -82,8 +107,10 @@ function transformShouldBeComparator() {
       CallExpression(path) {
         if (transformComparatorMap.hasOwnProperty(path.node.callee.name)) {
           path.node.callee.name = transformComparatorMap[path.node.callee.name];
-          const newArgument0 = b.template.expression(path.node.arguments[0].value)();
-          const newArgument1 = b.template.expression(path.node.arguments[1].value)();
+          const newArgument0 =
+            b.template.expression(path.node.arguments[0].value)();
+          const newArgument1 =
+            b.template.expression(path.node.arguments[1].value)();
           path.node.arguments = [newArgument0, newArgument1];
         }
       },
@@ -93,9 +120,9 @@ function transformShouldBeComparator() {
 
 
 const transformEqualToMap = {
-  "shouldBeEqualToString": "assert_equals",
-  "shouldBeEqualToNumber": "assert_equals",
-}
+  'shouldBeEqualToString': 'assert_equals',
+  'shouldBeEqualToNumber': 'assert_equals',
+};
 
 function transformShouldBeEqualToSpecific() {
   return {
@@ -103,7 +130,8 @@ function transformShouldBeEqualToSpecific() {
       CallExpression(path) {
         if (transformEqualToMap.hasOwnProperty(path.node.callee.name)) {
           path.node.callee.name = transformEqualToMap[path.node.callee.name];
-          const newArgument0 = b.template.expression(path.node.arguments[0].value)();
+          const newArgument0 =
+            b.template.expression(path.node.arguments[0].value)();
           path.node.arguments[0] = newArgument0;
         }
       },
@@ -113,10 +141,10 @@ function transformShouldBeEqualToSpecific() {
 
 function transformSourceCodeString(sourceCode, addSetup=true) {
   const pluginArray = [
-      transformShouldBeBool,
-      transformShouldBeValue,
-      transformShouldBeComparator,
-      transformShouldBeEqualToSpecific,
+    transformShouldBeBool,
+    transformShouldBeValue,
+    transformShouldBeComparator,
+    transformShouldBeEqualToSpecific,
   ];
 
   if (addSetup) {
@@ -134,4 +162,4 @@ function transformFile(filePath) {
   return transformSourceCodeString(sourceCode);
 }
 
-module.exports = { transformSourceCodeString, transformFile };
+module.exports = {transformSourceCodeString, transformFile};
