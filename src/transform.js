@@ -29,9 +29,9 @@ function transformShouldBeBool() {
         if (transformBoolMap.hasOwnProperty(path.node.callee.name)) {
           path.node.callee.name = transformBoolMap[path.node.callee.name];
 
-          const newArgument =
+          const newActual =
             babel.template.expression(path.node.arguments[0].value)();
-          path.node.arguments[0] = newArgument;
+          path.node.arguments[0] = newActual;
         }
       },
     },
@@ -82,10 +82,10 @@ function transformShouldBeValue() {
     visitor: {
       CallExpression(path) {
         if (transformValueMap.hasOwnProperty(path.node.callee.name)) {
-          const newArgument0 =
+          const newActual =
             babel.template.expression(path.node.arguments[0].value)();
-          const newArgument1 = transformValueMap[path.node.callee.name].value;
-          path.node.arguments = [newArgument0, newArgument1];
+          const newExpected = transformValueMap[path.node.callee.name].value;
+          path.node.arguments = [newActual, newExpected];
 
           path.node.callee.name = transformValueMap[path.node.callee.name].name;
         }
@@ -106,11 +106,11 @@ function transformShouldBeComparator() {
     visitor: {
       CallExpression(path) {
         if (transformComparatorMap.hasOwnProperty(path.node.callee.name)) {
-          const newArgument0 =
+          const newActual =
             babel.template.expression(path.node.arguments[0].value)();
-          const newArgument1 =
+          const newExpected =
             babel.template.expression(path.node.arguments[1].value)();
-          path.node.arguments = [newArgument0, newArgument1];
+          path.node.arguments = [newActual, newExpected];
 
           path.node.callee.name = transformComparatorMap[path.node.callee.name];
         }
@@ -132,9 +132,9 @@ function transformShouldBeEqualToSpecific() {
         if (transformEqualToMap.hasOwnProperty(path.node.callee.name)) {
           path.node.callee.name = transformEqualToMap[path.node.callee.name];
 
-          const newArgument0 =
+          const newActual =
             babel.template.expression(path.node.arguments[0].value)();
-          path.node.arguments[0] = newArgument0;
+          path.node.arguments[0] = newActual;
         }
       },
     },
