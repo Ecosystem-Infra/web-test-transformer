@@ -126,18 +126,17 @@ describe('#testTransformSourceCode()', function() {
     });
   });
 
-  // Transformed files have prefix 't_'
   context('File-Level Transformations', function() {
     it('should transform short file, adding setup()', function() {
       const inputFile = './test/testdata/input/short_file.js';
-      const expected = fs.readFileSync('./test/testdata/reference/t_short_file.js', 'utf-8');
+      const expected = fs.readFileSync('./test/testdata/reference/transformed_short_file.js', 'utf-8');
       const actual = String(transformFile(inputFile));
       assert.equal(actual, expected);
     });
 
     it('should transform multi-line file with varying parameter expressions', function() {
       const inputFile = './test/testdata/input/multiline_file.js';
-      const expected = fs.readFileSync('./test/testdata/reference/t_multiline_file.js', 'utf-8');
+      const expected = fs.readFileSync('./test/testdata/reference/transformed_multiline_file.js', 'utf-8');
       const actual = String(transformFile(inputFile));
       assert.equal(actual, expected);
     });

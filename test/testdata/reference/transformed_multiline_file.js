@@ -3,6 +3,7 @@ setup({
   explicit_done: false
 });
 const value = 'value';
+const badValue = 1;
 assert_equals(value, 'value');
 assert_not_equals(value.length, badValue);
 let testObject = {
