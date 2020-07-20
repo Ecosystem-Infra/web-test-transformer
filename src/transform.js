@@ -160,7 +160,7 @@ function transformSourceCodeString(sourceCode, addSetup=true) {
 }
 
 function transformFile(filePath) {
-  const sourceCode = fs.readFileSync(filePath);
+  const sourceCode = fs.readFileSync(filePath, 'utf-8');
   return transformSourceCodeString(sourceCode);
 }
 

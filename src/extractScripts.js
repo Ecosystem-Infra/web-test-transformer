@@ -36,8 +36,7 @@ function extractScriptsFromHTML(filePath, tempDir=null) {
         onopentag(tagname, attribs) {
           if (tagname === SCRIPT) {
             inScript = true;
-            const newFileName = '/script' +
-                scriptCount + '_' + fileNameFromPath(filePath) + '.js';
+            const newFileName = newNameFromPath(filePath, scriptCount);
             currentFile = tempDir.name + newFileName;
             files.push(currentFile);
             // Creates file, overwriting an existing file, with empty contents.
@@ -72,11 +71,12 @@ function extractScriptsFromHTML(filePath, tempDir=null) {
  * @param {string} filePath
  * @returns {string}
  */
-function fileNameFromPath(filePath) {
+function newNameFromPath(filePath, scriptCount) {
   const directorySplit = filePath.split('/');
   const fileNameWithExtension = directorySplit[directorySplit.length - 1];
   // Return the name without the extension
-  return fileNameWithExtension.split('.')[0];
+  const fileNameWithoutExtension = fileNameWithExtension.split('.')[0];
+  return '/ref_script' + scriptCount + '_' + fileNameWithoutExtension + '.js';
 }
 
-module.exports = extractScriptsFromHTML;
+module.exports = { extractScriptsFromHTML, newNameFromPath };

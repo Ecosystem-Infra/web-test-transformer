@@ -3,7 +3,7 @@ const assert = require('assert');
 const fs = require('fs');
 const tmp = require('tmp');
 
-const extractScriptsFromHTML = require('../src/extractScripts.js');
+const { extractScriptsFromHTML } = require('../src/extractScripts.js');
 
 // IMPORTANT: if file naming convention changes in file, change this function.
 function expectedResults(fileName, dirName, numberOfScriptTags) {
