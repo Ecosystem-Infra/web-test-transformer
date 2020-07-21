@@ -4,9 +4,9 @@ const fs = require('fs');
 
 // addSetupNode adds the setup() call to the beginning of the script.
 function addSetupNode() {
-  const setupNode = babel.template.statement(`
+  const setupNode = babel.template.statement.ast(`
     setup({single_test: true, explicit_done: false});
-  `)();
+  `);
   return {
     visitor: {
       Program(path) {
