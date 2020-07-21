@@ -74,10 +74,10 @@ const tempDir = './test/testdata/reference';
 const outputPath = './t_play.html';
 injectScriptsIntoHTML(filePath, tempDir, outputPath);
 
-function injectScriptsIntoHTML(filePath, tempDir, outputPath) {
+async function injectScriptsIntoHTML(filePath, tempDir, outputPath) {
   const oldHTML = fs.readFileSync(filePath, 'utf-8');
 
-  const result = posthtml([
+  const result = await posthtml([
     injectScriptsPlugin({filePath: filePath, tempDir: tempDir}), 
     changeSrcPlugin(),
   ])
@@ -86,4 +86,7 @@ function injectScriptsIntoHTML(filePath, tempDir, outputPath) {
     console.log(result.html)
     fs.writeFileSync(outputPath, result.html);
   });
+  return outputPath;
 }
+
+module.exports = { injectScriptsIntoHTML };

@@ -5,7 +5,8 @@ const tmp = require('tmp');
 
 const { extractScriptsFromHTML } = require('../src/extractScripts.js');
 
-// IMPORTANT: if file naming convention changes in file, change this function.
+// IMPORTANT: if file naming convention changes in 
+// extractScripts.js source file, change this function.
 function expectedResults(fileName, dirName, numberOfScriptTags) {
   const referenceBase = './test/testdata/reference/ref_';
   const files = [];
