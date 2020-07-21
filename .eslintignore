@@ -1,2 +1,2 @@
-**/test/testdata/reference/*.js
+**/test/testdata/**/*.js
 **/tempJsScripts*
