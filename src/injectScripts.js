@@ -2,11 +2,10 @@
 
 const fs = require('fs');
 const posthtml = require('posthtml');
-const { newNameFromPath } = require('./extractScripts');
 
 const SCRIPT = 'script';
 const TEST_HARNESS = 'testharness.js';
-const TEST_HARNESS_REPORT = 'testharnessreport.js'
+const TEST_HARNESS_REPORT = 'testharnessreport.js';
 const JS_TEST = 'js-test.js';
 
 function injectScriptsPlugin(params) {
@@ -14,9 +13,8 @@ function injectScriptsPlugin(params) {
     let scriptCount = 0;
     tree.match({tag: SCRIPT}, (node) => {
       if (node.content && node.content.length > 0) {
-        const newScriptFile = newNameFromPath(params.filePath, scriptCount);
-        const newScript = fs.readFileSync(params.tempDir + newScriptFile, 'utf-8');
-        node.content[0] = newScript;
+        node.content[0] = params.scripts[scriptCount];
+        node.content.unshift('\n');
       }
       scriptCount++;
       return node;
@@ -37,9 +35,9 @@ function changeSrcPlugin() {
     });
 
     const newSrcNode = {
-      tag: SCRIPT, 
-      attrs: {src: srcPath.replace(TEST_HARNESS, TEST_HARNESS_REPORT)}
-    }
+      tag: SCRIPT,
+      attrs: {src: srcPath.replace(TEST_HARNESS, TEST_HARNESS_REPORT)},
+    };
 
     addNode(tree, newSrcNode, (node) => {
       return node.tag == SCRIPT && node.attrs && node.attrs.src == srcPath;
@@ -63,30 +61,23 @@ function addNode(tree, node, conditionTest) {
       }
     }
   } else if (typeof tree === 'object' && tree.hasOwnProperty('content')) {
-    addNode(tree.content, node, conditionTest); 
+    addNode(tree.content, node, conditionTest);
   }
 
   return false;
 }
 
-const filePath = './test/testdata/input/file-list-test.html';
-const tempDir = './test/testdata/reference';
-const outputPath = './t_play.html';
-injectScriptsIntoHTML(filePath, tempDir, outputPath);
-
-async function injectScriptsIntoHTML(filePath, tempDir, outputPath) {
+function injectScriptsIntoHTML(filePath, scripts, outputPath) {
   const oldHTML = fs.readFileSync(filePath, 'utf-8');
 
-  const result = await posthtml([
-    injectScriptsPlugin({filePath: filePath, tempDir: tempDir}), 
+  const newHTML = posthtml([
+    injectScriptsPlugin({filePath: filePath, scripts: scripts}),
     changeSrcPlugin(),
   ])
-  .process(oldHTML)
-  .then((result) => {
-    console.log(result.html)
-    fs.writeFileSync(outputPath, result.html);
-  });
-  return outputPath;
-}
+      .process(oldHTML, {sync: true})
+      .html;
 
-module.exports = { injectScriptsIntoHTML };
+  fs.writeFileSync(outputPath, newHTML);
+  return newHTML;
+}
+module.exports = {injectScriptsIntoHTML};

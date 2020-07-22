@@ -1,12 +1,8 @@
 'use strict';
 const fs = require('fs');
 const htmlparser2 = require('htmlparser2');
-const tmp = require('tmp');
 
 const SCRIPT = 'script';
-// IMPORTANT: if file naming convention changes,
-// update corresponding strings in testExtractScripts.js
-const TEMP_DIR = 'tempJsScripts';
 
 /**
  * extractScriptsFromHTML extracts the javascript from within <script>
@@ -16,37 +12,28 @@ const TEMP_DIR = 'tempJsScripts';
  * named script{number}_{test filename}.js
  * @param {string} filePath - path to the HTML test file to extract
  * javascript from within <script> tags.
- * @param {tmp object} [tempDir=null] - OPTIONAL directory to put
- * new .js files in. If null, will create one in the cwd with prefix TEMP_DIR.
  * @returns {[string]} - the full path of the files that were written.
  */
 function extractScriptsFromHTML(filePath, tempDir=null) {
-  let scriptCount = 0;
   let inScript = false;
-  let currentFile = '';
-  const files = [];
-  // Creates a temporary directory to hold all of
-  // the JS scripts in this HTML test file.
-  if (!tempDir) {
-    tempDir = tmp.dirSync({prefix: TEMP_DIR, tmpdir: '.'});
-  }
+  let scriptCount = 0;
+  const outputScripts = [];
 
   const parser = new htmlparser2.Parser(
       {
         onopentag(tagname, attribs) {
           if (tagname === SCRIPT) {
             inScript = true;
-            const newFileName = newNameFromPath(filePath, scriptCount);
-            currentFile = tempDir.name + newFileName;
-            files.push(currentFile);
-            // Creates file, overwriting an existing file, with empty contents.
-            fs.writeFileSync(currentFile, '');
+            // This accounts for script tags that have no text, but we want
+            // an accurate count.
+            // Ex: <script src='../resources/js-test.js'></script>
+            outputScripts.push('');
           }
         },
 
         ontext(text) {
           if (inScript) {
-            fs.appendFileSync(currentFile, text);
+            outputScripts[scriptCount] += text;
           }
         },
 
@@ -62,21 +49,7 @@ function extractScriptsFromHTML(filePath, tempDir=null) {
   const data = fs.readFileSync(filePath, 'utf8');
   parser.write(data);
   parser.end();
-  return files;
+  return outputScripts;
 }
 
-/**
- * Given a string path to a file,
- * returns the name of the file without the file extension.
- * @param {string} filePath
- * @returns {string}
- */
-function newNameFromPath(filePath, scriptCount) {
-  const directorySplit = filePath.split('/');
-  const fileNameWithExtension = directorySplit[directorySplit.length - 1];
-  // Return the name without the extension
-  const fileNameWithoutExtension = fileNameWithExtension.split('.')[0];
-  return '/ref_script' + scriptCount + '_' + fileNameWithoutExtension + '.js';
-}
-
-module.exports = { extractScriptsFromHTML, newNameFromPath };
+module.exports = {extractScriptsFromHTML};
