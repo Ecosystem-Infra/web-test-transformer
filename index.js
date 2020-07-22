@@ -2,6 +2,8 @@
 const flags = require('flags');
 const fs = require('fs');
 
+// The order of operation is to extract each js script from HTML, transform it,
+// then inject it back into HTML.
 const {extractScriptsFromHTML} = require('./src/extractScripts.js');
 const {transformSourceCodeString} = require('./src/transform.js');
 const {injectScriptsIntoHTML} = require('./src/injectScripts.js');
@@ -38,7 +40,7 @@ function transformFile(filePath) {
 
   try {
     const transformedScripts = [];
-    const originalScripts = extractScriptsFromHTML(filePath, tempDir);
+    const originalScripts = extractScriptsFromHTML(filePath);
     originalScripts.forEach((script) => {
       const newScript = transformSourceCodeString(script);
       transformedScripts.push(newScript);

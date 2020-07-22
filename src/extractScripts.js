@@ -6,15 +6,13 @@ const SCRIPT = 'script';
 
 /**
  * extractScriptsFromHTML extracts the javascript from within <script>
- * tags in the HTML test provided and writes each script to a .js file.
- * It creates a directory "tempJsScripts-{tmp numbers}" in the current
- * working directory, then puts the .js scripts extracted in the new dir,
- * named script{number}_{test filename}.js
+ * tags in the HTML test provided returns the extracted scripts as a
+ * list of source code strings. 
  * @param {string} filePath - path to the HTML test file to extract
  * javascript from within <script> tags.
- * @returns {[string]} - the full path of the files that were written.
+ * @returns {[string]} - the source code strings between the <script> tags.
  */
-function extractScriptsFromHTML(filePath, tempDir=null) {
+function extractScriptsFromHTML(filePath) {
   let inScript = false;
   let scriptCount = 0;
   const outputScripts = [];
