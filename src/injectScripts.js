@@ -8,12 +8,14 @@ const TEST_HARNESS = 'testharness.js';
 const TEST_HARNESS_REPORT = 'testharnessreport.js';
 const JS_TEST = 'js-test.js';
 
-function injectScriptsPlugin(params) {
+function replaceScriptsPlugin(params) {
   return function(tree) {
     let scriptCount = 0;
     tree.match({tag: SCRIPT}, (node) => {
       if (node.content && node.content.length > 0) {
+        // Updates the script content
         node.content[0] = params.scripts[scriptCount];
+        // Adds a newline before so we don't get <script>functionCallHere()
         node.content.unshift('\n');
       }
       scriptCount++;
@@ -47,6 +49,7 @@ function changeSrcPlugin() {
 
 // Adds node after the first node that returns true on conditionTest
 // This function is based on posthtml's traverse() function.
+// https://github.com/posthtml/posthtml/blob/master/lib/api.js#L102
 // returns true if node was added, false if not.
 function addNode(tree, node, conditionTest) {
   if (Array.isArray(tree)) {
@@ -71,11 +74,11 @@ function injectScriptsIntoHTML(filePath, scripts, outputPath) {
   const oldHTML = fs.readFileSync(filePath, 'utf-8');
 
   const newHTML = posthtml([
-    injectScriptsPlugin({filePath: filePath, scripts: scripts}),
+    replaceScriptsPlugin({filePath: filePath, scripts: scripts}),
     changeSrcPlugin(),
   ])
-  .process(oldHTML, {sync: true})
-  .html;
+      .process(oldHTML, {sync: true})
+      .html;
 
   fs.writeFileSync(outputPath, newHTML);
   return newHTML;
