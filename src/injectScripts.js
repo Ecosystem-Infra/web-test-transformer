@@ -74,8 +74,8 @@ function injectScriptsIntoHTML(filePath, scripts, outputPath) {
     injectScriptsPlugin({filePath: filePath, scripts: scripts}),
     changeSrcPlugin(),
   ])
-      .process(oldHTML, {sync: true})
-      .html;
+  .process(oldHTML, {sync: true})
+  .html;
 
   fs.writeFileSync(outputPath, newHTML);
   return newHTML;
