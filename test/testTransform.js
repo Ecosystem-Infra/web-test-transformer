@@ -2,7 +2,7 @@
 const assert = require('assert');
 const fs = require('fs');
 
-const {transformSourceCodeString, transformFile} = require('../src/transform.js');
+const {transformSourceCodeString} = require('../src/transform.js');
 
 describe('#testTransformSourceCode()', function() {
   context('Single Function Transformations', function() {
@@ -129,15 +129,17 @@ describe('#testTransformSourceCode()', function() {
   context('File-Level Transformations', function() {
     it('should transform short file, adding setup()', function() {
       const inputFile = './test/testdata/input/short_file.js';
+      const sourceCode = fs.readFileSync(inputFile, 'utf-8');
       const expected = fs.readFileSync('./test/testdata/reference/transformed_short_file.js', 'utf-8');
-      const actual = String(transformFile(inputFile));
+      const actual = transformSourceCodeString(sourceCode);
       assert.equal(actual, expected);
     });
 
     it('should transform multi-line file with varying parameter expressions', function() {
       const inputFile = './test/testdata/input/multiline_file.js';
+      const sourceCode = fs.readFileSync(inputFile, 'utf-8');
       const expected = fs.readFileSync('./test/testdata/reference/transformed_multiline_file.js', 'utf-8');
-      const actual = String(transformFile(inputFile));
+      const actual = transformSourceCodeString(sourceCode); ;
       assert.equal(actual, expected);
     });
   });

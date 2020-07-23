@@ -1,53 +1,35 @@
 'use strict';
 const assert = require('assert');
 const fs = require('fs');
-const tmp = require('tmp');
 
-const extractScriptsFromHTML = require('../src/extractScripts.js');
+const {extractScriptsFromHTML} = require('../src/extractScripts.js');
 
-// IMPORTANT: if file naming convention changes in file, change this function.
-function expectedResults(fileName, dirName, numberOfScriptTags) {
+function referenceScripts(fileName, numberOfScriptTags) {
   const referenceBase = './test/testdata/reference/ref_';
-  const files = [];
-  const referenceFiles = [];
+  const referenceScripts = [];
   for (let i = 0; i < numberOfScriptTags; i++) {
-    const newFileName = 'script' + i + '_' + fileName + '.js';
-    files.push(dirName + '/' + newFileName);
-    referenceFiles.push(referenceBase + newFileName);
+    const referenceFileName = referenceBase + 'script' + i + '_' + fileName + '.js';
+    referenceScripts.push(fs.readFileSync(referenceFileName, 'utf-8'));
   }
-  return {fileList: files, references: referenceFiles};
+  return referenceScripts;
 }
 
 describe('#extractScriptsFromHTML()', function() {
-  let tempDir = null;
-  before(function() {
-    tempDir = tmp.dirSync({prefix: 'testTmp', unsafeCleanup: true, tmpdir: '.'});
-  });
-
-  after(function() {
-    tempDir.removeCallback();
-  });
-
   context('2 sets of <script> tags- file-list-test.html', function() {
     const testPath = './test/testdata/input/file-list-test.html';
     const testFileName = 'file-list-test';
     const testScriptCount = 2;
 
-    it('should return correct list of files', function() {
-      const actualFileList = extractScriptsFromHTML(testPath, tempDir);
-      const expected = expectedResults(testFileName, tempDir.name, testScriptCount);
-      // If this assert fails, be sure to check that the
-      // naming convention in expectedResults() above matches that in extractScripts.js
-      assert.deepEqual(actualFileList, expected.fileList);
-    });
+    it('should return array with the correct javascript inside', function() {
+      const actualScripts = extractScriptsFromHTML(testPath);
+      const expectedScripts = referenceScripts(testFileName, testScriptCount);
 
-    it('should write files with the correct javascript inside', function() {
-      const actualFileList = extractScriptsFromHTML(testPath, tempDir);
-      const expected = expectedResults(testFileName, tempDir.name, testScriptCount);
-      for (let i = 0; i < actualFileList.length; i++) {
-        const actualContents = fs.readFileSync(actualFileList[i], 'utf-8');
-        const expectedContents = fs.readFileSync(expected.references[i], 'utf-8');
-        assert.equal(actualContents, expectedContents);
+      assert.equal(actualScripts.length, expectedScripts.length);
+
+      for (let i = 0; i < actualScripts.length; i++) {
+        const actual = actualScripts[i];
+        const expected = expectedScripts[i];
+        assert.equal(actual, expected);
       }
     });
   });

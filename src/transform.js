@@ -1,6 +1,5 @@
 'use strict';
 const babel = require('@babel/core');
-const fs = require('fs');
 
 // addSetupNode adds the setup() call to the beginning of the script.
 function addSetupNode() {
@@ -159,9 +158,4 @@ function transformSourceCodeString(sourceCode, addSetup=true) {
   return output.code;
 }
 
-function transformFile(filePath) {
-  const sourceCode = fs.readFileSync(filePath);
-  return transformSourceCodeString(sourceCode);
-}
-
-module.exports = {transformSourceCodeString, transformFile};
+module.exports = {transformSourceCodeString};
