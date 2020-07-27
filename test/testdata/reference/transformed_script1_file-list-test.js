@@ -2,8 +2,6 @@ setup({
   single_test: true,
   explicit_done: false
 });
-description("Test the attribute of FileList.");
-debug("Start");
 
 function onInputFileChange(files) {
   window.files = files;

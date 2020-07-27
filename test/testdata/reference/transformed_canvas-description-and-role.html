@@ -1,0 +1,36 @@
+<!--
+    This file was exactly copied below from
+    /third_party/blink/web_tests/accessibility/canvas-description-and-role.html
+    in order to test the code with real examples of legacy tests.
+-->
+<!DOCTYPE HTML>
+<html>
+<title>This test makes sure that a canvas with and without fallback content each has the right role and description.</title>
+<body>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+
+<style>canvas { display: inline; border: 1px solid #000; }</style>
+    <!-- No whitespace between canvases on purpose, so there's the same
+         number of children of the container element on all platforms. -->
+    <div id="container" tabIndex="0" aria-label="Container"><canvas id="canvas1" width="100" height="100" aria-label="Canvas label">Fallback text</canvas><canvas id="canvas2" width="100" height="100"><button>Inner button</button></canvas><canvas id="canvas3-skipped" width="100" height="100"></canvas></div>
+
+<div id="console"></div>
+<script>
+
+if (window.testRunner && window.accessibilityController) {
+    testRunner.dumpAsText();
+
+    document.getElementById('container').focus();
+    var axContainer = accessibilityController.focusedElement;
+
+    assert_equals(axContainer.childrenCount, 2);
+
+    var axCanvas1 = axContainer.childAtIndex(0);
+
+    var axCanvas2 = axContainer.childAtIndex(1);
+}
+</script>
+
+</body>
+</html>

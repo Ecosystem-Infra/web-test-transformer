@@ -40,9 +40,19 @@ function transformFile(filePath) {
 
   try {
     const transformedScripts = [];
+    let addSetup = true;
     const originalScripts = extractScriptsFromHTML(filePath);
     originalScripts.forEach((script) => {
-      const newScript = transformSourceCodeString(script);
+      // Handles the <script src="js-test.js"></script> tags
+      if (script === '') {
+        transformedScripts.push(script);
+        return;
+      }
+      const newScript = transformSourceCodeString(script, addSetup);
+      // Only add setup() once, to the first non-empty script.
+      if (addSetup) {
+        addSetup = false;
+      }
       transformedScripts.push(newScript);
     });
     injectScriptsIntoHTML(filePath, transformedScripts, outputPath);

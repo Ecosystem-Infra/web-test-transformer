@@ -140,12 +140,45 @@ function transformShouldBeEqualToSpecific() {
   };
 }
 
+function removeDescription(transformInfo) {
+  return function() {
+    return {
+      visitor: {
+        CallExpression(path) {
+          if (path.node.callee.name === 'description') {
+            // TODO: this currently will overwrite with the last description.
+            // Later, we might only want the first or a concatenation.
+            transformInfo.description = path.node.arguments[0].value;
+            path.remove();
+          }
+        },
+      },
+    };
+  };
+}
+
+
+function removeDebug() {
+  return {
+    visitor: {
+      CallExpression(path) {
+        if (path.node.callee.name === 'debug') {
+          path.remove();
+        }
+      },
+    },
+  };
+}
+
 function transformSourceCodeString(sourceCode, addSetup=true) {
+  const transformInfo = {};
   const pluginArray = [
     transformShouldBeBool,
     transformShouldBeValue,
     transformShouldBeComparator,
     transformShouldBeEqualToSpecific,
+    removeDescription(transformInfo),
+    removeDebug,
   ];
 
   if (addSetup) {
@@ -155,7 +188,9 @@ function transformSourceCodeString(sourceCode, addSetup=true) {
   const output = babel.transformSync(sourceCode, {
     plugins: pluginArray,
   });
-  return output.code;
+
+  return {code: output.code, title: transformInfo.description};
 }
+
 
 module.exports = {transformSourceCodeString};

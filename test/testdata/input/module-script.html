@@ -1,0 +1,15 @@
+<!--
+    This file was exactly copied below from
+    /third_party/blink/web_tests/fast/dom/HTMLScriptElement/module-script.html
+    in order to test the code with real examples of legacy tests.
+-->
+<script src="../../../resources/js-test.js"></script>
+<script>
+description("Test basic module execution.");
+</script>
+<script type="module">
+debug("Module scripts should be executed...");
+</script>
+<script type="module" language="nonsense">
+debug("...and should ignore any 'language' attribute");
+</script>
