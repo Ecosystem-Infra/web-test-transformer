@@ -130,17 +130,21 @@ describe('#testTransformSourceCode()', function() {
     it('should transform short file, adding setup()', function() {
       const inputFile = './test/testdata/input/short_file.js';
       const sourceCode = fs.readFileSync(inputFile, 'utf-8');
-      const expected = fs.readFileSync('./test/testdata/reference/transformed_short_file.js', 'utf-8');
-      const actual = transformSourceCodeString(sourceCode).code;
-      assert.equal(actual, expected);
+      const expectedCode = fs.readFileSync('./test/testdata/reference/transformed_short_file.js', 'utf-8');
+      const expectedTitle = 'Makes sure typeof works';
+      const actual = transformSourceCodeString(sourceCode);
+      assert.equal(actual.code, expectedCode);
+      assert.equal(actual.title, expectedTitle);
     });
 
     it('should transform multi-line file with varying parameter expressions', function() {
       const inputFile = './test/testdata/input/multiline_file.js';
       const sourceCode = fs.readFileSync(inputFile, 'utf-8');
-      const expected = fs.readFileSync('./test/testdata/reference/transformed_multiline_file.js', 'utf-8');
-      const actual = transformSourceCodeString(sourceCode).code;
-      assert.equal(actual, expected);
+      const expectedCode = fs.readFileSync('./test/testdata/reference/transformed_multiline_file.js', 'utf-8');
+      const expectedTitle = 'Tests value and testObject';
+      const actual = transformSourceCodeString(sourceCode);
+      assert.equal(actual.code, expectedCode);
+      assert.equal(actual.title, expectedTitle);
     });
   });
 });

@@ -149,9 +149,12 @@ function removeDescription(transformInfo) {
       visitor: {
         CallExpression(path) {
           if (path.node.callee.name === 'description') {
-            // TODO: this currently will overwrite with the last description.
-            // Later, we might only want the first or a concatenation.
-            transformInfo.description = path.node.arguments[0].value;
+            // This will currently only take the first description.
+            // We might want to change to use the last, longest, or a
+            // concatenation?
+            if (!transformInfo.description) {
+              transformInfo.description = path.node.arguments[0].value;
+            }
             path.remove();
           }
         },
