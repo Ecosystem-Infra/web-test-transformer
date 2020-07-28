@@ -46,6 +46,7 @@ function changeSrcPlugin() {
       attrs: {src: srcPath.replace(TEST_HARNESS, TEST_HARNESS_REPORT)},
     };
 
+    // Add testharnessreport.js src after testharness.js src
     addNode(tree, newSrcNode, (node) => {
       return node.tag === SCRIPT && node.attrs && node.attrs.src === srcPath;
     });
@@ -59,15 +60,17 @@ function changeSrcPlugin() {
 // immediately after the <html> tag,
 // immediately after the <!DOCTYPE html> tag,
 // at the beginning of the document.
+// description is a string.
 function insertTitlePlugin(description) {
   return function(tree) {
     let foundTitle = false;
     tree.match({tag: TITLE}, (node) => {
-      console.log('WARNING: existing <title>, not using description paramter.');
       foundTitle = true;
       return node;
     });
+    // <title> exists, don't add a new one.
     if (foundTitle) {
+      console.log('WARNING: existing <title>, not using description parameter');
       return;
     }
     const newTitleNode = {
@@ -75,16 +78,19 @@ function insertTitlePlugin(description) {
       content: [description],
     };
 
+    // Within <head> tag
     if (addNodeWithinTag(tree, newTitleNode, (node) => {
       return node.tag === HEAD;
     })) {
       return;
     }
+    // Within <html> tag
     if (addNodeWithinTag(tree, newTitleNode, (node) => {
       return node.tag === HTML;
     })) {
       return;
     }
+    // Within <!DOCTYPE html> tag
     if (addNode(tree, newTitleNode, (node) => {
       return typeof node === 'string' && node.includes(DOCTYPE);
     })) {
@@ -101,6 +107,9 @@ function insertTitlePlugin(description) {
 // This function is based on posthtml's traverse() function.
 // https://github.com/posthtml/posthtml/blob/master/lib/api.js#L102
 // returns true if node was added, false if not.
+// Attempts to match the indentation of previous node.
+// If you wish to add a node within tags (e.g within <head>),
+// see addNodeWithinTag below.
 function addNode(tree, node, conditionTest) {
   let indentation = '\n';
   if (Array.isArray(tree)) {
@@ -124,10 +133,12 @@ function addNode(tree, node, conditionTest) {
   return false;
 }
 
-// Adds node after the first node that returns true on conditionTest
-// This function is based on posthtml's traverse() function.
-// https://github.com/posthtml/posthtml/blob/master/lib/api.js#L102
-// returns true if node was added, false if not.
+// Adaptation of addNode above. See that function first.
+// Assumes conditionTest returns true on an open tag like
+// <head>, <html>, etc.
+// addNodeWithinTag will add node within the tag matched if it is
+// an object, if not it will add the node after the match.
+// Attempts to match indentation within the tag for new node.
 function addNodeWithinTag(tree, node, conditionTest) {
   let indentation = '\n';
   if (Array.isArray(tree)) {
@@ -136,9 +147,13 @@ function addNodeWithinTag(tree, node, conditionTest) {
         indentation = tree[i];
       }
       if (conditionTest(tree[i])) {
+        // Copy indentation within node if it exists.
         if (typeof tree[i] === 'object') {
           const content = tree[i].content ? tree[i].content : [];
-          if (tree[i].content.length > 0 && typeof tree[i].content[0] === 'string' && INDENTATION_REGEX.test(tree[i].content[0])) {
+          // Indentation is usually set as the first string within a tree array
+          if (tree[i].content.length > 0 &&
+              typeof tree[i].content[0] === 'string' &&
+              INDENTATION_REGEX.test(tree[i].content[0])) {
             indentation = tree[i].content[0];
           }
           content.unshift(node);
@@ -146,6 +161,7 @@ function addNodeWithinTag(tree, node, conditionTest) {
           tree[i].content = content;
           return true;
         }
+        // If matching node is not an object, default behavior is add node after
         tree.splice(i+1, 0, indentation);
         tree.splice(i+2, 0, node);
         return true;

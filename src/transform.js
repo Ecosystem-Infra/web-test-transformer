@@ -140,6 +140,9 @@ function transformShouldBeEqualToSpecific() {
   };
 }
 
+// Returns a closure that modifies the parameter, transformInfo
+// so that information gathered during traversal can be used in
+// the outer scope.
 function removeDescription(transformInfo) {
   return function() {
     return {
@@ -157,7 +160,7 @@ function removeDescription(transformInfo) {
   };
 }
 
-
+// TODO: maybe change debug() to console.log() instead of deleting?
 function removeDebug() {
   return {
     visitor: {
@@ -170,8 +173,14 @@ function removeDebug() {
   };
 }
 
+// Applies transformations in pluginArray to sourceCode (string)
+// If addSetup is true, will add setup() test call at the beginning of
+// the script.
+// Returns an object with the transformed source code and the test title,
+// if one was parsed from description() calls.
 function transformSourceCodeString(sourceCode, addSetup=true) {
   const transformInfo = {};
+  // Upon visiting a node, babel runs each plugin in order.
   const pluginArray = [
     transformShouldBeBool,
     transformShouldBeValue,
@@ -191,6 +200,5 @@ function transformSourceCodeString(sourceCode, addSetup=true) {
 
   return {code: output.code, title: transformInfo.description};
 }
-
 
 module.exports = {transformSourceCodeString};

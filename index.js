@@ -41,6 +41,7 @@ function transformFile(filePath) {
   try {
     const transformedScripts = [];
     let addSetup = true;
+    let title = '';
     const originalScripts = extractScriptsFromHTML(filePath);
     originalScripts.forEach((script) => {
       // Handles the <script src="js-test.js"></script> tags
@@ -48,14 +49,24 @@ function transformFile(filePath) {
         transformedScripts.push(script);
         return;
       }
-      const newScript = transformSourceCodeString(script, addSetup);
+      const transformation = transformSourceCodeString(script, addSetup);
       // Only add setup() once, to the first non-empty script.
       if (addSetup) {
         addSetup = false;
       }
-      transformedScripts.push(newScript);
+      transformedScripts.push(transformation.code);
+      // Use the first title description that appears in the old file.
+      if (title === '') {
+        title = transformation.title;
+      }
     });
-    injectScriptsIntoHTML(filePath, transformedScripts, outputPath);
+
+    // If the title is still undefined after searching scripts for definitions,
+    // use the filepath.
+    if (title === '') {
+      title = 'testing ' + filePath;
+    }
+    injectScriptsIntoHTML(filePath, transformedScripts, title, outputPath);
     console.log('Completed transformation, wrote', outputPath);
   } catch (err) {
     console.log('Error while transforming', filePath);
