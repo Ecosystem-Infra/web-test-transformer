@@ -12,7 +12,7 @@ const JS_TEST = 'js-test.js';
 const TEST_HARNESS = 'testharness.js';
 const TEST_HARNESS_REPORT = 'testharnessreport.js';
 
-const INDENTATION_REGEX = new RegExp('^\n[ ]*$');
+const INDENTATION_REGEX = /^\n\s*$/g;
 
 function replaceScriptsPlugin(params) {
   return function(tree) {
