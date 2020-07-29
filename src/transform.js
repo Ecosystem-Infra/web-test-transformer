@@ -143,7 +143,7 @@ function transformShouldBeEqualToSpecific() {
 // Returns a closure that modifies the parameter, transformInfo
 // so that information gathered during traversal can be used in
 // the outer scope.
-function removeDescription(transformInfo) {
+function removeDescriptionFactory(transformInfo) {
   return function() {
     return {
       visitor: {
@@ -182,6 +182,9 @@ function removeDebug() {
 // Returns an object with the transformed source code and the test title,
 // if one was parsed from description() calls.
 function transformSourceCodeString(sourceCode, addSetup=true) {
+  // transformInfo is an object to be passed to plugins that return closures
+  // so that we can have access to data within the transformation back in this
+  // scope.
   const transformInfo = {};
   // Upon visiting a node, babel runs each plugin in order.
   const pluginArray = [
@@ -189,7 +192,7 @@ function transformSourceCodeString(sourceCode, addSetup=true) {
     transformShouldBeValue,
     transformShouldBeComparator,
     transformShouldBeEqualToSpecific,
-    removeDescription(transformInfo),
+    removeDescriptionFactory(transformInfo),
     removeDebug,
   ];
 

@@ -79,27 +79,21 @@ function insertTitlePlugin(description) {
     };
 
     // Within <head> tag
-    if (addNodeWithinTag(tree, newTitleNode, (node) => {
-      return node.tag === HEAD;
-    })) {
+    if (addNodeWithinTag(tree, newTitleNode, (node) => node.tag === HEAD)) {
       return;
     }
     // Within <html> tag
-    if (addNodeWithinTag(tree, newTitleNode, (node) => {
-      return node.tag === HTML;
-    })) {
+    if (addNodeWithinTag(tree, newTitleNode, (node) => node.tag === HTML)) {
       return;
     }
     // Within <!DOCTYPE html> tag
-    if (addNode(tree, newTitleNode, (node) => {
-      return typeof node === 'string' && node.includes(DOCTYPE);
-    })) {
+    if (addNode(tree, newTitleNode, (node) =>
+      typeof node === 'string' && node.includes(DOCTYPE))
+    ) {
       return;
     }
     // Default: add title to beginning of document
-    addNode(tree, newTitleNode, () => {
-      return true;
-    });
+    addNode(tree, newTitleNode, () => true);
   };
 }
 

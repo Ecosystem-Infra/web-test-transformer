@@ -61,11 +61,16 @@ function transformFile(filePath) {
       }
     });
 
+    if (originalScripts.length != transformedScripts) {
+      throw Error('originalScripts and transformedScripts differ in length');
+    }
+
     // If the title is still undefined after searching scripts for definitions,
     // use the filepath.
     if (title === '') {
-      title = 'testing ' + filePath;
+      title = filePath;
     }
+
     injectScriptsIntoHTML(filePath, transformedScripts, title, outputPath);
     console.log('Completed transformation, wrote', outputPath);
   } catch (err) {
