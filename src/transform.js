@@ -179,8 +179,9 @@ function removeDebug() {
 // Applies transformations in pluginArray to sourceCode (string)
 // If addSetup is true, will add setup() test call at the beginning of
 // the script.
-// Returns an object with the transformed source code and the test title,
-// if one was parsed from description() calls.
+// Returns an object 
+//  - code {string}: the transformed source code string
+//  - title {string}: test title string, if parsed from description() calls
 function transformSourceCodeString(sourceCode, addSetup=true) {
   // transformInfo is an object to be passed to plugins that return closures
   // so that we can have access to data within the transformation back in this

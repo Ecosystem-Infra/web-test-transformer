@@ -1,4 +1,5 @@
 'use strict';
+const debug = require('debug')('index');
 const flags = require('flags');
 const fs = require('fs');
 
@@ -36,7 +37,7 @@ async function main() {
 }
 
 function transformFile(filePath) {
-  console.log('Starting transformation on', filePath);
+  debug('Starting transformation on', filePath);
 
   try {
     const transformedScripts = [];
@@ -61,25 +62,28 @@ function transformFile(filePath) {
       }
     });
 
-    if (originalScripts.length != transformedScripts) {
+    if (originalScripts.length != transformedScripts.length) {
+      debug.error("originalScripts length", originalScripts.length);
+      debug.error("transformedScripts length", transformedScripts.length);
       throw Error('originalScripts and transformedScripts differ in length');
     }
 
     // If the title is still undefined after searching scripts for definitions,
     // use the filepath.
     if (title === '') {
+      debug('Title empty after transformation, using', filepath);
       title = filePath;
     }
 
     injectScriptsIntoHTML(filePath, transformedScripts, title, outputPath);
-    console.log('Completed transformation, wrote', outputPath);
+    debug('Completed transformation, wrote', outputPath);
   } catch (err) {
-    console.log('Error while transforming', filePath);
-    console.log(err);
+    debug('Error while transforming', filePath);
+    debug(err);
   }
 }
 
 main().catch((reason) => {
-  console.error(reason);
+  debug.error(reason);
   process.exit(1);
 });
