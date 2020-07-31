@@ -63,8 +63,8 @@ function transformFile(filePath) {
     });
 
     if (originalScripts.length != transformedScripts.length) {
-      debug.error("originalScripts length", originalScripts.length);
-      debug.error("transformedScripts length", transformedScripts.length);
+      debug.error('originalScripts length', originalScripts.length);
+      debug.error('transformedScripts length', transformedScripts.length);
       throw Error('originalScripts and transformedScripts differ in length');
     }
 

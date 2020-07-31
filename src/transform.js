@@ -179,7 +179,7 @@ function removeDebug() {
 // Applies transformations in pluginArray to sourceCode (string)
 // If addSetup is true, will add setup() test call at the beginning of
 // the script.
-// Returns an object 
+// Returns an object
 //  - code {string}: the transformed source code string
 //  - title {string}: test title string, if parsed from description() calls
 function transformSourceCodeString(sourceCode, addSetup=true) {
