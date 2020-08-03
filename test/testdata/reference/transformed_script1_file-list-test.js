@@ -3,6 +3,8 @@ setup({
   explicit_done: false
 });
 
+console.log("Start");
+
 function onInputFileChange(files) {
   window.files = files;
   assert_true(files instanceof FileList);

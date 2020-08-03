@@ -12,6 +12,8 @@ const {injectScriptsIntoHTML} = require('./src/injectScripts.js');
 const FILE_FLAG = 'file';
 const DIR_FLAG = 'dir';
 
+const HTML = 'html';
+
 // Specify exactly one of --file or --dir.
 flags.defineString(FILE_FLAG, null, 'Path to test file to transform');
 flags.defineString(DIR_FLAG, null, 'Path to dir of test files to transform');
@@ -32,7 +34,11 @@ async function main() {
 
   const fileNames = fs.readdirSync(dir);
   fileNames.forEach((fileName) => {
-    transformFile(dir + fileName);
+    const extension = fileName.split('.').pop();
+    // Only support .html tests, don't want to 'transform' something else.
+    if (extension === HTML) {
+      transformFile(dir + fileName);
+    }
   });
 }
 

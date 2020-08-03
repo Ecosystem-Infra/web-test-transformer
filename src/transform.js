@@ -163,13 +163,16 @@ function removeDescriptionFactory(transformInfo) {
   };
 }
 
-// TODO: maybe change debug() to console.log() instead of deleting?
-function removeDebug() {
+function transformDebug() {
   return {
     visitor: {
       CallExpression(path) {
+        const consoleIdentifier = babel.types.identifier('console');
+        const logIdentifier = babel.types.identifier('log');
+        const consoleLogNode =
+          babel.types.memberExpression(consoleIdentifier, logIdentifier);
         if (path.node.callee.name === 'debug') {
-          path.remove();
+          path.node.callee = consoleLogNode;
         }
       },
     },
@@ -194,7 +197,7 @@ function transformSourceCodeString(sourceCode, addSetup=true) {
     transformShouldBeComparator,
     transformShouldBeEqualToSpecific,
     removeDescriptionFactory(transformInfo),
-    removeDebug,
+    transformDebug,
   ];
 
   if (addSetup) {

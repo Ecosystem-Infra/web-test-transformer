@@ -7,6 +7,7 @@ let testObject = {
   property: true
 };
 
+debug('tested value');
 description('This part tests testObject but this is a bad description!');
 shouldBeDefined("testObject.property");
 shouldBeTrue("testObject.property");

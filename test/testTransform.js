@@ -124,6 +124,13 @@ describe('#testTransformSourceCode()', function() {
       const actual = transformSourceCodeString(inputString, false).code;
       assert.equal(actual, expected);
     });
+
+    it('should transform debug()', function() {
+      const inputString = 'debug("debug string");';
+      const expected = 'console.log("debug string");';
+      const actual = transformSourceCodeString(inputString, false).code;
+      assert.equal(actual, expected);
+    });
   });
 
   context('File-Level Transformations', function() {
