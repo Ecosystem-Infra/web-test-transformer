@@ -1,6 +1,5 @@
 
 if (window.testRunner && window.accessibilityController) {
-    testRunner.dumpAsText();
 
     document.getElementById('container').focus();
     var axContainer = accessibilityController.focusedElement;

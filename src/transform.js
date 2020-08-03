@@ -179,6 +179,22 @@ function transformDebug() {
   };
 }
 
+// removeDumpAsText will delete testRunner.dumpAsText()
+// since testharnessreport.js does that automatically.
+function removeDumpAsText() {
+  return {
+    visitor: {
+      CallExpression(path) {
+        if (path.node.callee.type === 'MemberExpression'
+            && path.node.callee.object.name === 'testRunner'
+            && path.node.callee.property.name === 'dumpAsText') {
+          path.remove();
+        }
+      },
+    },
+  };
+}
+
 // Applies transformations in pluginArray to sourceCode (string)
 // If addSetup is true, will add setup() test call at the beginning of
 // the script.
@@ -198,6 +214,7 @@ function transformSourceCodeString(sourceCode, addSetup=true) {
     transformShouldBeEqualToSpecific,
     removeDescriptionFactory(transformInfo),
     transformDebug,
+    removeDumpAsText,
   ];
 
   if (addSetup) {
