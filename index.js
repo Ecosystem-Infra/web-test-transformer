@@ -112,8 +112,8 @@ function transformFile(filePath) {
     injectScriptsIntoHTML(filePath, transformedScripts, title, outputPath);
     log('Completed transformation, wrote', outputPath);
   } catch (err) {
-    log('Error while transforming', filePath);
-    log(err);
+    error('Error while transforming', filePath);
+    error(err);
   }
 }
 
