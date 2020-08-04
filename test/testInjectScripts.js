@@ -58,7 +58,7 @@ describe('#injectScriptsIntoHTML', function() {
       const testDescription = 'Testing to see if title under DOCTYPE in transformed HTML';
       const scripts = ['', ''];
       const actualHTML = injectScriptsIntoHTML(testFile, scripts, testDescription, tmpFile.name);
-      const expectedHTML = fs.readFileSync('./test/testdata/reference/transformed_doctype-title.html');
+      const expectedHTML = fs.readFileSync('./test/testdata/reference/transformed_doctype-title.html', 'utf-8');
       assert.equal(actualHTML, expectedHTML);
     });
 

@@ -22,14 +22,20 @@ function replaceScriptsPlugin(params) {
     let scriptCount = 0;
     tree.match({tag: SCRIPT}, (node) => {
       if (node.content && node.content.length > 0) {
+        const script = params.scripts[scriptCount];
         // Updates the script content
-        node.content[0] = params.scripts[scriptCount];
-        // Adds a newline before so we don't get <script>functionCallHere()
-        node.content.unshift('\n');
+        node.content[0] = script;
 
-        // Ensure ending newline so we don't get functionCall()</script>
-        if (node.content[node.content.length-1] !== '\n') {
-          node.content.push('\n');
+        // if the new script is empty, we will just have
+        // <script></script>
+        if (script !== '') {
+          // Adds a newline before so we don't get <script>functionCallHere()
+          node.content.unshift('\n');
+
+          // Ensure ending newline so we don't get functionCall()Here</script>
+          if (node.content[node.content.length-1] !== '\n') {
+            node.content.push('\n');
+          }
         }
       }
       scriptCount++;

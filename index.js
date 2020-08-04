@@ -18,6 +18,7 @@ const HTML = 'html';
 // This regex isn't perfect, but it is a really close filter to make sure we
 // are only transforming tests that have js-test.js src'ed within script tests,
 // without making it too specific to miss matches.
+// eslint-disable-next-line max-len
 const SRC_JS_TEST_REGEX = new RegExp('<script src=.*/resources/js-test\\.js.></script>');
 
 // Specify exactly one of --file or --dir.
@@ -69,7 +70,7 @@ function transformFile(filePath) {
     const htmlSource = fs.readFileSync(filePath);
     // Only transform tests that src js-test.js in scripts.
     if (!SRC_JS_TEST_REGEX.test(htmlSource)) {
-      error('Test does not src js-test.js, skipping transformation on', filePath);
+      error('Test does not src js-test.js, skipping', filePath);
       return;
     }
 
