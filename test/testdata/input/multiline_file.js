@@ -1,3 +1,4 @@
+description('Tests value and testObject');
 const value = 'value';
 const badValue = 1;
 shouldBeEqualToString("value", 'value');
@@ -6,5 +7,6 @@ let testObject = {
   property: true
 };
 
+description('This part tests testObject but this is a bad description!');
 shouldBeDefined("testObject.property");
 shouldBeTrue("testObject.property");

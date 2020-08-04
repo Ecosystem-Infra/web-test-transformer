@@ -140,12 +140,61 @@ function transformShouldBeEqualToSpecific() {
   };
 }
 
+// Returns a closure that modifies the parameter, transformInfo
+// so that information gathered during traversal can be used in
+// the outer scope.
+function removeDescriptionFactory(transformInfo) {
+  return function() {
+    return {
+      visitor: {
+        CallExpression(path) {
+          if (path.node.callee.name === 'description') {
+            // This will currently only take the first description.
+            // We might want to change to use the last, longest, or a
+            // concatenation?
+            if (!transformInfo.description) {
+              transformInfo.description = path.node.arguments[0].value;
+            }
+            path.remove();
+          }
+        },
+      },
+    };
+  };
+}
+
+// TODO: maybe change debug() to console.log() instead of deleting?
+function removeDebug() {
+  return {
+    visitor: {
+      CallExpression(path) {
+        if (path.node.callee.name === 'debug') {
+          path.remove();
+        }
+      },
+    },
+  };
+}
+
+// Applies transformations in pluginArray to sourceCode (string)
+// If addSetup is true, will add setup() test call at the beginning of
+// the script.
+// Returns an object
+//  - code {string}: the transformed source code string
+//  - title {string}: test title string, if parsed from description() calls
 function transformSourceCodeString(sourceCode, addSetup=true) {
+  // transformInfo is an object to be passed to plugins that return closures
+  // so that we can have access to data within the transformation back in this
+  // scope.
+  const transformInfo = {};
+  // Upon visiting a node, babel runs each plugin in order.
   const pluginArray = [
     transformShouldBeBool,
     transformShouldBeValue,
     transformShouldBeComparator,
     transformShouldBeEqualToSpecific,
+    removeDescriptionFactory(transformInfo),
+    removeDebug,
   ];
 
   if (addSetup) {
@@ -155,7 +204,8 @@ function transformSourceCodeString(sourceCode, addSetup=true) {
   const output = babel.transformSync(sourceCode, {
     plugins: pluginArray,
   });
-  return output.code;
+
+  return {code: output.code, title: transformInfo.description};
 }
 
 module.exports = {transformSourceCodeString};

@@ -1,4 +1,5 @@
 'use strict';
+const debug = require('debug')('index');
 const flags = require('flags');
 const fs = require('fs');
 
@@ -36,24 +37,53 @@ async function main() {
 }
 
 function transformFile(filePath) {
-  console.log('Starting transformation on', filePath);
+  debug('Starting transformation on', filePath);
 
   try {
     const transformedScripts = [];
+    let addSetup = true;
+    let title = '';
     const originalScripts = extractScriptsFromHTML(filePath);
     originalScripts.forEach((script) => {
-      const newScript = transformSourceCodeString(script);
-      transformedScripts.push(newScript);
+      // Handles the <script src="js-test.js"></script> tags
+      if (script === '') {
+        transformedScripts.push(script);
+        return;
+      }
+      const transformation = transformSourceCodeString(script, addSetup);
+      // Only add setup() once, to the first non-empty script.
+      if (addSetup) {
+        addSetup = false;
+      }
+      transformedScripts.push(transformation.code);
+      // Use the first title description that appears in the old file.
+      if (title === '') {
+        title = transformation.title;
+      }
     });
-    injectScriptsIntoHTML(filePath, transformedScripts, outputPath);
-    console.log('Completed transformation, wrote', outputPath);
+
+    if (originalScripts.length != transformedScripts.length) {
+      debug.error('originalScripts length', originalScripts.length);
+      debug.error('transformedScripts length', transformedScripts.length);
+      throw Error('originalScripts and transformedScripts differ in length');
+    }
+
+    // If the title is still undefined after searching scripts for definitions,
+    // use the filepath.
+    if (title === '') {
+      debug('Title empty after transformation, using', filepath);
+      title = filePath;
+    }
+
+    injectScriptsIntoHTML(filePath, transformedScripts, title, outputPath);
+    debug('Completed transformation, wrote', outputPath);
   } catch (err) {
-    console.log('Error while transforming', filePath);
-    console.log(err);
+    debug('Error while transforming', filePath);
+    debug(err);
   }
 }
 
 main().catch((reason) => {
-  console.error(reason);
+  debug.error(reason);
   process.exit(1);
 });
