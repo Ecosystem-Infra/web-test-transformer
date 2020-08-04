@@ -1,4 +1,5 @@
 'use strict';
+const debug = require('debug');
 const fs = require('fs');
 const posthtml = require('posthtml');
 
@@ -13,6 +14,8 @@ const TEST_HARNESS = 'testharness.js';
 const TEST_HARNESS_REPORT = 'testharnessreport.js';
 
 const INDENTATION_REGEX = /^\n\s*$/g;
+
+const log = debug('injectScripts');
 
 function replaceScriptsPlugin(params) {
   return function(tree) {
@@ -70,7 +73,7 @@ function insertTitlePlugin(description) {
     });
     // <title> exists, don't add a new one.
     if (foundTitle) {
-      console.log('WARNING: existing <title>, not using description parameter');
+      log('WARNING: existing <title>, not using description parameter');
       return;
     }
     const newTitleNode = {
@@ -86,7 +89,7 @@ function insertTitlePlugin(description) {
     if (addNodeWithinTag(tree, newTitleNode, (node) => node.tag === HTML)) {
       return;
     }
-    // Within <!DOCTYPE html> tag
+    // After <!DOCTYPE html> tag
     if (addNode(tree, newTitleNode, (node) =>
       typeof node === 'string' && node.includes(DOCTYPE))
     ) {
