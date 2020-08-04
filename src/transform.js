@@ -185,9 +185,9 @@ function removeDumpAsText() {
   return {
     visitor: {
       CallExpression(path) {
-        if (path.node.callee.type === 'MemberExpression'
-            && path.node.callee.object.name === 'testRunner'
-            && path.node.callee.property.name === 'dumpAsText') {
+        if (path.node.callee.type === 'MemberExpression' &&
+            path.node.callee.object.name === 'testRunner' &&
+            path.node.callee.property.name === 'dumpAsText') {
           path.remove();
         }
       },

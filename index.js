@@ -1,5 +1,5 @@
 'use strict';
-const debug = require('debug')('index');
+const debug = require('debug');
 const flags = require('flags');
 const fs = require('fs');
 
@@ -11,14 +11,33 @@ const {injectScriptsIntoHTML} = require('./src/injectScripts.js');
 
 const FILE_FLAG = 'file';
 const DIR_FLAG = 'dir';
+const QUIET_FLAG = 'quiet';
 
 const HTML = 'html';
+
+// This regex isn't perfect, but it is a really close filter to make sure we
+// are only transforming tests that have js-test.js src'ed within script tests,
+// without making it too specific to miss matches.
+const SRC_JS_TEST_REGEX = new RegExp('<script src=.*/resources/js-test\\.js.></script>');
 
 // Specify exactly one of --file or --dir.
 flags.defineString(FILE_FLAG, null, 'Path to test file to transform');
 flags.defineString(DIR_FLAG, null, 'Path to dir of test files to transform');
-// TODO: flag for output dir
+flags.defineBoolean(QUIET_FLAG, false, 'Disable logging');
+// TODO: flag for output path
 flags.parse();
+
+const log = debug('index.js');
+const error = debug('index.js:ERROR');
+// For some reason 1 is RED
+error.color = 1;
+
+// babel npm package has very verbose debug usage
+debug.enable('* -babel');
+if (flags.get(QUIET_FLAG)) {
+  // disables all namespaces
+  debug.disable();
+}
 
 async function main() {
   const file = flags.get(FILE_FLAG);
@@ -34,18 +53,27 @@ async function main() {
 
   const fileNames = fs.readdirSync(dir);
   fileNames.forEach((fileName) => {
-    const extension = fileName.split('.').pop();
-    // Only support .html tests, don't want to 'transform' something else.
-    if (extension === HTML) {
-      transformFile(dir + fileName);
-    }
+    transformFile(dir + fileName);
   });
 }
 
 function transformFile(filePath) {
-  debug('Starting transformation on', filePath);
-
   try {
+    // Only support .html tests, don't want to 'transform' something else.
+    // This checks the file extension.
+    if (filePath.split('.').pop() !== HTML) {
+      error('Not a .html test, skipping transformation on', filePath);
+      return;
+    }
+
+    const htmlSource = fs.readFileSync(filePath);
+    // Only transform tests that src js-test.js in scripts.
+    if (!SRC_JS_TEST_REGEX.test(htmlSource)) {
+      error('Test does not src js-test.js, skipping transformation on', filePath);
+      return;
+    }
+
+    log('Starting transformation on', filePath);
     const transformedScripts = [];
     let addSetup = true;
     let title = '';
@@ -69,27 +97,27 @@ function transformFile(filePath) {
     });
 
     if (originalScripts.length != transformedScripts.length) {
-      debug.error('originalScripts length', originalScripts.length);
-      debug.error('transformedScripts length', transformedScripts.length);
+      error('originalScripts length', originalScripts.length);
+      error('transformedScripts length', transformedScripts.length);
       throw Error('originalScripts and transformedScripts differ in length');
     }
 
     // If the title is still undefined after searching scripts for definitions,
     // use the filepath.
     if (title === '') {
-      debug('Title empty after transformation, using', filepath);
+      log('Title empty after transformation, using', filepath);
       title = filePath;
     }
-
+    const outputPath = './t_play.html';
     injectScriptsIntoHTML(filePath, transformedScripts, title, outputPath);
-    debug('Completed transformation, wrote', outputPath);
+    log('Completed transformation, wrote', outputPath);
   } catch (err) {
-    debug('Error while transforming', filePath);
-    debug(err);
+    log('Error while transforming', filePath);
+    log(err);
   }
 }
 
 main().catch((reason) => {
-  debug.error(reason);
+  error(reason);
   process.exit(1);
 });

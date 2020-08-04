@@ -23,6 +23,11 @@ function replaceScriptsPlugin(params) {
         node.content[0] = params.scripts[scriptCount];
         // Adds a newline before so we don't get <script>functionCallHere()
         node.content.unshift('\n');
+
+        // Ensure ending newline so we don't get functionCall()</script>
+        if (node.content[node.content.length-1] !== '\n') {
+          node.content.push('\n');
+        }
       }
       scriptCount++;
       return node;
