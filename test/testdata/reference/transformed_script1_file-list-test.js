@@ -1,11 +1,10 @@
-setup({
-  single_test: true,
-  explicit_done: false
-});
+setup({ single_test: true, explicit_done: false });
+
 
 console.log("Start");
 
-function onInputFileChange(files) {
+function onInputFileChange(files)
+{
   window.files = files;
   assert_true(files instanceof FileList);
   assert_equals(files.length, 2);

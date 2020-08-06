@@ -4,7 +4,10 @@ const babel = require('@babel/core');
 // addSetupNode adds the setup() call to the beginning of the script.
 function addSetupNode() {
   const setupNode = babel.template.statement.ast(`
-    setup({single_test: true, explicit_done: false});
+    setup({
+      single_test: true,
+      explicit_done: false
+    });
   `);
   return {
     visitor: {
@@ -223,6 +226,7 @@ function transformSourceCodeString(sourceCode, addSetup=true) {
 
   const output = babel.transformSync(sourceCode, {
     plugins: pluginArray,
+    retainLines: true,
   });
 
   return {code: output.code, title: transformInfo.description};

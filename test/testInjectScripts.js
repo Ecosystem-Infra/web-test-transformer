@@ -11,7 +11,7 @@ describe('#injectScriptsIntoHTML', function() {
   context('Inject 2 Scripts', function() {
     const tmpFile = tmp.fileSync();
     const testFile = './test/testdata/input/file-list-test.html';
-    const testDescription = 'Test the attribute of FileList';
+    const testDescription = 'Test the attribute of FileList.';
     const scripts = [];
     scripts.push(fs.readFileSync('./test/testdata/reference/transformed_script0_file-list-test.js', 'utf-8'));
     scripts.push(fs.readFileSync('./test/testdata/reference/transformed_script1_file-list-test.js', 'utf-8'));
