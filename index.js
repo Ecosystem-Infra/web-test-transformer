@@ -11,6 +11,7 @@ const {injectScriptsIntoHTML} = require('./src/injectScripts.js');
 
 const FILE_FLAG = 'file';
 const DIR_FLAG = 'dir';
+const OUTPUT_DIR_FLAG = 'output_dir';
 const QUIET_FLAG = 'quiet';
 
 const HTML = 'html';
@@ -18,14 +19,17 @@ const HTML = 'html';
 // This regex isn't perfect, but it is a really close filter to make sure we
 // are only transforming tests that have js-test.js src'ed within script tests,
 // without making it too specific to miss matches.
+// injectScripts.js verifies that the src change is actually made and throws
+// if not, so this is just to fail faster.
 // eslint-disable-next-line max-len
 const SRC_JS_TEST_REGEX = new RegExp('<script src=.*/resources/js-test\\.js.></script>');
 
 // Specify exactly one of --file or --dir.
 flags.defineString(FILE_FLAG, null, 'Path to test file to transform');
 flags.defineString(DIR_FLAG, null, 'Path to dir of test files to transform');
+// eslint-disable-next-line max-len
+flags.defineString(OUTPUT_DIR_FLAG, null, 'Path to dir where output files should be written. If null, will overwrite input files.');
 flags.defineBoolean(QUIET_FLAG, false, 'Disable logging');
-// TODO: flag for output path
 flags.parse();
 
 const log = debug('index.js');
@@ -43,28 +47,39 @@ if (flags.get(QUIET_FLAG)) {
 async function main() {
   const file = flags.get(FILE_FLAG);
   const dir = flags.get(DIR_FLAG);
+  const outputDir = flags.get(OUTPUT_DIR_FLAG);
 
   if ((file && dir) || (!file && !dir)) {
     throw new Error('Specify exactly one of --file or --dir');
   }
 
   if (file) {
-    return transformFile(file);
+    return transformFile(file, outputDir);
   }
 
   const fileNames = fs.readdirSync(dir);
   fileNames.forEach((fileName) => {
-    transformFile(dir + fileName);
+    transformFile(dir + fileName, outputDir);
   });
 }
 
-function transformFile(filePath) {
+// TODO: function documentation
+function transformFile(filePath, outputDir) {
   try {
     // Only support .html tests, don't want to 'transform' something else.
     // This checks the file extension.
     if (filePath.split('.').pop() !== HTML) {
       error('Not a .html test, skipping transformation on', filePath);
       return;
+    }
+
+    let outputPath;
+    if (outputPath === null) {
+      outputPath = filepath;
+    } else {
+      const fileName = filePath.split('/').pop();
+      // TODO: might need to add a '/'.
+      outputPath = outputDir + fileName;
     }
 
     const htmlSource = fs.readFileSync(filePath);
@@ -109,8 +124,8 @@ function transformFile(filePath) {
       log('Title empty after transformation, using', filepath);
       title = filePath;
     }
-    const outputPath = './t_play.html';
     injectScriptsIntoHTML(filePath, transformedScripts, title, outputPath);
+
     log('Completed transformation, wrote', outputPath);
   } catch (err) {
     error('Error while transforming', filePath);
