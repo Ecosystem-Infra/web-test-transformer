@@ -4,7 +4,10 @@ const babel = require('@babel/core');
 // addSetupNode adds the setup() call to the beginning of the script.
 function addSetupNode() {
   const setupNode = babel.template.statement.ast(`
-    setup({single_test: true, explicit_done: false});
+    setup({
+      single_test: true,
+      explicit_done: false
+    });
   `);
   return {
     visitor: {
@@ -163,12 +166,31 @@ function removeDescriptionFactory(transformInfo) {
   };
 }
 
-// TODO: maybe change debug() to console.log() instead of deleting?
-function removeDebug() {
+function transformDebug() {
   return {
     visitor: {
       CallExpression(path) {
         if (path.node.callee.name === 'debug') {
+          const consoleIdentifier = babel.types.identifier('console');
+          const logIdentifier = babel.types.identifier('log');
+          const consoleLogNode =
+          babel.types.memberExpression(consoleIdentifier, logIdentifier);
+          path.node.callee = consoleLogNode;
+        }
+      },
+    },
+  };
+}
+
+// removeDumpAsText will delete testRunner.dumpAsText()
+// since testharnessreport.js does that automatically.
+function removeDumpAsText() {
+  return {
+    visitor: {
+      CallExpression(path) {
+        if (path.node.callee.type === 'MemberExpression' &&
+            path.node.callee.object.name === 'testRunner' &&
+            path.node.callee.property.name === 'dumpAsText') {
           path.remove();
         }
       },
@@ -194,7 +216,8 @@ function transformSourceCodeString(sourceCode, addSetup=true) {
     transformShouldBeComparator,
     transformShouldBeEqualToSpecific,
     removeDescriptionFactory(transformInfo),
-    removeDebug,
+    transformDebug,
+    removeDumpAsText,
   ];
 
   if (addSetup) {
@@ -203,6 +226,7 @@ function transformSourceCodeString(sourceCode, addSetup=true) {
 
   const output = babel.transformSync(sourceCode, {
     plugins: pluginArray,
+    retainLines: true,
   });
 
   return {code: output.code, title: transformInfo.description};

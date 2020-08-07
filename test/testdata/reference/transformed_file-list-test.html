@@ -6,7 +6,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Test the attribute of FileList</title>
+<title>Test the attribute of FileList.</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 </head>
@@ -15,12 +15,13 @@
 <div id="description"></div>
 <div id="console"></div>
 <script>
-setup({
-  single_test: true,
-  explicit_done: false
-});
+setup({ single_test: true, explicit_done: false });
 
-function onInputFileChange(files) {
+
+console.log("Start");
+
+function onInputFileChange(files)
+{
   window.files = files;
   assert_true(files instanceof FileList);
   assert_equals(files.length, 2);

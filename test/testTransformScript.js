@@ -2,7 +2,7 @@
 const assert = require('assert');
 const fs = require('fs');
 
-const {transformSourceCodeString} = require('../src/transform.js');
+const {transformSourceCodeString} = require('../src/transformScript.js');
 
 describe('#testTransformSourceCode()', function() {
   context('Single Function Transformations', function() {
@@ -121,6 +121,13 @@ describe('#testTransformSourceCode()', function() {
     it('should transform shouldBeEqualToNumber()', function() {
       const inputString = 'shouldBeEqualToNumber("pixel.location - 1", 25);';
       const expected = 'assert_equals(pixel.location - 1, 25);';
+      const actual = transformSourceCodeString(inputString, false).code;
+      assert.equal(actual, expected);
+    });
+
+    it('should transform debug()', function() {
+      const inputString = 'debug("debug string");';
+      const expected = 'console.log("debug string");';
       const actual = transformSourceCodeString(inputString, false).code;
       assert.equal(actual, expected);
     });

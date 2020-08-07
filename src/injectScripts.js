@@ -22,10 +22,21 @@ function replaceScriptsPlugin(params) {
     let scriptCount = 0;
     tree.match({tag: SCRIPT}, (node) => {
       if (node.content && node.content.length > 0) {
+        const script = params.scripts[scriptCount];
         // Updates the script content
-        node.content[0] = params.scripts[scriptCount];
-        // Adds a newline before so we don't get <script>functionCallHere()
-        node.content.unshift('\n');
+        node.content[0] = script;
+
+        // if the new script is empty, we will just have
+        // <script></script>
+        if (script !== '') {
+          // Adds a newline before so we don't get <script>functionCallHere()
+          node.content.unshift('\n');
+
+          // Ensure ending newline so we don't get functionCall()Here</script>
+          if (node.content[node.content.length-1] !== '\n') {
+            node.content.push('\n');
+          }
+        }
       }
       scriptCount++;
       return node;
@@ -33,13 +44,14 @@ function replaceScriptsPlugin(params) {
   };
 }
 
-function changeSrcPlugin() {
+function changeSrcPlugin(srcInfo) {
   let srcPath = '';
   return function(tree) {
     tree.match({tag: SCRIPT}, (node) => {
       if (node.attrs && node.attrs.src && node.attrs.src.endsWith(JS_TEST)) {
         node.attrs.src = node.attrs.src.replace(JS_TEST, TEST_HARNESS);
         srcPath = node.attrs.src;
+        srcInfo.changedSrc = true;
       }
       return node;
     });
@@ -176,14 +188,19 @@ function addNodeWithinTag(tree, node, conditionTest) {
 
 function injectScriptsIntoHTML(filePath, scripts, description, outputPath) {
   const oldHTML = fs.readFileSync(filePath, 'utf-8');
+  const srcInfo = {changedSrc: false};
 
   const newHTML = posthtml([
     replaceScriptsPlugin({filePath: filePath, scripts: scripts}),
-    changeSrcPlugin(),
+    changeSrcPlugin(srcInfo),
     insertTitlePlugin(description),
   ])
       .process(oldHTML, {sync: true})
       .html;
+
+  if (!srcInfo.changedSrc) {
+    throw Error('injectScripts did not find js-test.js srced');
+  }
 
   fs.writeFileSync(outputPath, newHTML);
   return newHTML;

@@ -1,89 +1,55 @@
 'use strict';
-const debug = require('debug')('index');
+const debug = require('debug');
 const flags = require('flags');
 const fs = require('fs');
 
-// The order of operation is to extract each js script from HTML, transform it,
-// then inject it back into HTML.
-const {extractScriptsFromHTML} = require('./src/extractScripts.js');
-const {transformSourceCodeString} = require('./src/transform.js');
-const {injectScriptsIntoHTML} = require('./src/injectScripts.js');
+const {transformFile} = require('./src/transformFile.js');
+
 
 const FILE_FLAG = 'file';
 const DIR_FLAG = 'dir';
+const OUTPUT_DIR_FLAG = 'output_dir';
+const QUIET_FLAG = 'quiet';
 
 // Specify exactly one of --file or --dir.
 flags.defineString(FILE_FLAG, null, 'Path to test file to transform');
 flags.defineString(DIR_FLAG, null, 'Path to dir of test files to transform');
-// TODO: flag for output dir
+// eslint-disable-next-line max-len
+flags.defineString(OUTPUT_DIR_FLAG, null, 'Path to dir where output files should be written. If null, will overwrite input files.');
+flags.defineBoolean(QUIET_FLAG, false, 'Disable logging');
 flags.parse();
+
+const error = debug('index.js:ERROR');
+// For some reason 1 is RED
+error.color = 1;
+
+// babel npm package has very verbose debug usage, so enable all but babel.
+debug.enable('* -babel');
+if (flags.get(QUIET_FLAG)) {
+  // disables all namespaces
+  debug.disable();
+}
 
 async function main() {
   const file = flags.get(FILE_FLAG);
   const dir = flags.get(DIR_FLAG);
+  const outputDir = flags.get(OUTPUT_DIR_FLAG);
 
   if ((file && dir) || (!file && !dir)) {
     throw new Error('Specify exactly one of --file or --dir');
   }
 
   if (file) {
-    return transformFile(file);
+    return transformFile(file, outputDir);
   }
 
   const fileNames = fs.readdirSync(dir);
   fileNames.forEach((fileName) => {
-    transformFile(dir + fileName);
+    transformFile(dir + fileName, outputDir);
   });
 }
 
-function transformFile(filePath) {
-  debug('Starting transformation on', filePath);
-
-  try {
-    const transformedScripts = [];
-    let addSetup = true;
-    let title = '';
-    const originalScripts = extractScriptsFromHTML(filePath);
-    originalScripts.forEach((script) => {
-      // Handles the <script src="js-test.js"></script> tags
-      if (script === '') {
-        transformedScripts.push(script);
-        return;
-      }
-      const transformation = transformSourceCodeString(script, addSetup);
-      // Only add setup() once, to the first non-empty script.
-      if (addSetup) {
-        addSetup = false;
-      }
-      transformedScripts.push(transformation.code);
-      // Use the first title description that appears in the old file.
-      if (title === '') {
-        title = transformation.title;
-      }
-    });
-
-    if (originalScripts.length != transformedScripts.length) {
-      debug.error('originalScripts length', originalScripts.length);
-      debug.error('transformedScripts length', transformedScripts.length);
-      throw Error('originalScripts and transformedScripts differ in length');
-    }
-
-    // If the title is still undefined after searching scripts for definitions,
-    // use the filepath.
-    if (title === '') {
-      debug('Title empty after transformation, using', filepath);
-      title = filePath;
-    }
-
-    injectScriptsIntoHTML(filePath, transformedScripts, title, outputPath);
-    debug('Completed transformation, wrote', outputPath);
-  } catch (err) {
-    debug('Error while transforming', filePath);
-    debug(err);
-  }
-}
-
 main().catch((reason) => {
-  debug.error(reason);
+  error(reason);
   process.exit(1);
 });
