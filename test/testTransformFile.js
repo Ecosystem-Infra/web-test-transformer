@@ -15,6 +15,7 @@ describe('#transformFile', function() {
   after(function() {
     tmpDir.removeCallback();
   });
+
   context('transform HTML test end-to-end', function() {
     it('should transform file-list-test.html and write output file', function() {
       const inputFile = './test/testdata/input/file-list-test.html';

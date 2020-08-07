@@ -170,11 +170,11 @@ function transformDebug() {
   return {
     visitor: {
       CallExpression(path) {
-        const consoleIdentifier = babel.types.identifier('console');
-        const logIdentifier = babel.types.identifier('log');
-        const consoleLogNode =
-          babel.types.memberExpression(consoleIdentifier, logIdentifier);
         if (path.node.callee.name === 'debug') {
+          const consoleIdentifier = babel.types.identifier('console');
+          const logIdentifier = babel.types.identifier('log');
+          const consoleLogNode =
+          babel.types.memberExpression(consoleIdentifier, logIdentifier);
           path.node.callee = consoleLogNode;
         }
       },
