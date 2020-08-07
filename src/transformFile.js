@@ -6,7 +6,7 @@ const fs = require('fs');
 // The order of operation is to extract each js script from HTML, transform it,
 // then inject it back into HTML.
 const {extractScriptsFromHTML} = require('./extractScripts.js');
-const {transformSourceCodeString} = require('./transformJS.js');
+const {transformSourceCodeString} = require('./transformScript.js');
 const {injectScriptsIntoHTML} = require('./injectScripts.js');
 
 const HTML = 'html';

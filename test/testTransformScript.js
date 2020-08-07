@@ -2,7 +2,7 @@
 const assert = require('assert');
 const fs = require('fs');
 
-const {transformSourceCodeString} = require('../src/transformJS.js');
+const {transformSourceCodeString} = require('../src/transformScript.js');
 
 describe('#testTransformSourceCode()', function() {
   context('Single Function Transformations', function() {
