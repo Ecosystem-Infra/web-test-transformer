@@ -25,7 +25,7 @@ describe('#transformFile', function() {
       assert.equal(actual, expected);
     });
 
-    it('should transform file-list-test.html and write output file', function() {
+    it('should transform canvas-description-and-role.html and write output file', function() {
       const inputFile = './test/testdata/input/canvas-description-and-role.html';
       const referenceFile = './test/testdata/reference/transformed_canvas-description-and-role.html';
       transformFile(inputFile, tmpDir.name);

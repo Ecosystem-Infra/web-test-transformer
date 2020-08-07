@@ -24,8 +24,18 @@ const error = debug('transformFile:ERROR');
 // For some reason 1 is RED
 error.color = 1;
 
-// TODO: function documentation
-function transformFile(filePath, outputDir) {
+/**
+ * transformFile performs the full end-to-end transformation of a
+ * legacy js-test.js HTML test file to use the testharness.js framework.
+ * It extracts scripts, transforms them, then puts them back into the HTML,
+ * while handling context surrounding the test title and setup() calls.
+ *
+ * @param {string} filePath - full path to HTML test file to transform
+ * @param {string} outputDir - full path to an existing directory where
+ *  transformed files should be written. If null, overwrites the original
+ *  file. Files in outputDir will have the same name as the original file.
+ */
+function transformFile(filePath, outputDir=null) {
   try {
     // Only support .html tests, don't want to 'transform' something else.
     // This checks the file extension.
@@ -37,7 +47,6 @@ function transformFile(filePath, outputDir) {
     let outputPath;
     if (outputDir) {
       const fileName = filePath.split('/').pop();
-      // TODO: might need to add a '/'.
       outputPath = outputDir + '/' + fileName;
     } else {
       outputPath = filePath;
@@ -73,6 +82,8 @@ function transformFile(filePath, outputDir) {
       }
     });
 
+    // This is a defensive check to ensure the transformation didn't lose
+    // or gain any scripts.
     if (originalScripts.length != transformedScripts.length) {
       error('originalScripts length', originalScripts.length);
       error('transformedScripts length', transformedScripts.length);
