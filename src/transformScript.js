@@ -170,18 +170,11 @@ function transformDebug() {
   return {
     visitor: {
       CallExpression(path) {
-        const consoleIdentifier = babel.types.identifier('console');
-        const logIdentifier = babel.types.identifier('log');
-        const consoleLogNode =
-          babel.types.memberExpression(consoleIdentifier, logIdentifier);
         if (path.node.callee.name === 'debug') {
-<<<<<<< HEAD:src/transformJS.js
-=======
           const consoleIdentifier = babel.types.identifier('console');
           const logIdentifier = babel.types.identifier('log');
           const consoleLogNode =
           babel.types.memberExpression(consoleIdentifier, logIdentifier);
->>>>>>> 696739e374903308356ba2bbf72ffcdd8f6ac789:src/transformScript.js
           path.node.callee = consoleLogNode;
         }
       },
