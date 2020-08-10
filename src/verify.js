@@ -24,12 +24,15 @@ function isBaselineAllPass(baselineFile) {
 // Assumes content_shell is built and up to date.
 // Returns true if the transformedFile passses all tests, false otherwise.
 function verifyTransformation(transformedFile) {
-  const baselineFile = transformedFile.replace('\.html', '-expected.txt');
+  const baselineFile = transformedFile.replace('.html', '-expected.txt');
   const allPass = isBaselineAllPass(baselineFile);
   if (!allPass) {
     log(transformedFile + ' baseline was not all PASS, skipping verification');
     return false;
   }
+  // Delete baseline file if all pass,
+  // testharness.js does not have a baseline if the test is all pass.
+  fs.unlinkSync(baselineFile);
   try {
     log('Running web test', transformedFile);
     // This could likely be done better. Attempts to get path to the test
@@ -40,9 +43,6 @@ function verifyTransformation(transformedFile) {
     const cmd = '../tools/run_web_tests.py -t Default ' + relativePath;
     const testOutput = childProcess.execSync(cmd).toString();
     log(testOutput);
-    // Delete baseline file if all pass and successful transformation,
-    // testharness.js does not have a baseline if the test is all pass.
-    fs.unlinkSync(baselineFile);
     return true;
   } catch (err) {
     error(transformedFile + 'FAILED verification.');
