@@ -22,6 +22,7 @@ function isBaselineAllPass(baselineFile) {
 // transformedFile is a path to an html test
 // Assumes cwd is chromium/src/third_party/blink/web_tests/
 // Assumes content_shell is built and up to date.
+// Returns true if the transformedFile passses all tests, false otherwise.
 function verifyTransformation(transformedFile) {
   const baselineFile = transformedFile.replace('\.html', '-expected.txt');
   const allPass = isBaselineAllPass(baselineFile);
@@ -48,6 +49,8 @@ function verifyTransformation(transformedFile) {
     error('Status code:', error.status);
     error(err.message);
     error(err.stdout.toString());
+    // TODO: use git checkout or equivalent command to undo transformation
+    // on this file?
     return false;
   }
 }
