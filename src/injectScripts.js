@@ -112,6 +112,18 @@ function insertTitlePlugin(description) {
   };
 }
 
+
+function concatContentPlugin() {
+  return function(tree) {
+    tree.match({tag: SCRIPT}, (node) => {
+      if (node.content) {
+        node.content = [node.content.join()];
+      }
+      return node;
+    });
+  };
+}
+
 // Adds node after the first node that returns true on conditionTest
 // This function is based on posthtml's traverse() function.
 // https://github.com/posthtml/posthtml/blob/master/lib/api.js#L102
@@ -191,6 +203,7 @@ function injectScriptsIntoHTML(filePath, scripts, description, outputPath) {
   const srcInfo = {changedSrc: false};
 
   const newHTML = posthtml([
+    concatContentPlugin(),
     replaceScriptsPlugin({filePath: filePath, scripts: scripts}),
     changeSrcPlugin(srcInfo),
     insertTitlePlugin(description),

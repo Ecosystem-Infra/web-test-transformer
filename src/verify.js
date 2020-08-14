@@ -9,7 +9,7 @@ const error = debug('verify:ERROR');
 error.color = 1;
 
 function isBaselineAllPass(baselineFile) {
-  const lines = fs.readFileSync(baselineFile, 'utf-8').split(/\r?\n/);
+  const lines = fs.readFileSync(baselineFile, 'utf-8').split(/\r?\n/g);
   let allPass = true;
   lines.forEach((line) => {
     if (line.startsWith('FAIL') || line.startsWith('WARN')) {
@@ -23,7 +23,7 @@ function isBaselineAllPass(baselineFile) {
 // Assumes cwd is chromium/src/third_party/blink/web_tests/
 // Assumes content_shell is built and up to date.
 // Returns true if the transformedFile passses all tests, false otherwise.
-function verifyTransformation(transformedFile) {
+function verifyTransformation(transformedFile, targetBuild) {
   const baselineFile = transformedFile.replace('.html', '-expected.txt');
   const allPass = isBaselineAllPass(baselineFile);
   if (!allPass) {
@@ -40,17 +40,16 @@ function verifyTransformation(transformedFile) {
     // this should work. If it is a full path, this should split and take the
     // end (relative) path.
     const relativePath = transformedFile.split('web_tests/').pop();
-    const cmd = '../tools/run_web_tests.py -t Default ' + relativePath;
-    const testOutput = childProcess.execSync(cmd).toString();
-    log(testOutput);
+    const cmd = '../tools/run_web_tests.py -t ' +
+      targetBuild + ' ' +
+      relativePath + ' --no-show-results --quiet';
+    childProcess.execSync(cmd).toString();
     return true;
   } catch (err) {
-    error(transformedFile + 'FAILED verification.');
+    error(transformedFile + ' FAILED verification.');
     error('Status code:', error.status);
     error(err.message);
     error(err.stdout.toString());
-    // TODO: use git checkout or equivalent command to undo transformation
-    // on this file?
     return false;
   }
 }

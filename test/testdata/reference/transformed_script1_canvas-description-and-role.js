@@ -1,4 +1,4 @@
-setup({ single_test: true, explicit_done: false });
+setup({ single_test: true });
 
 
 if (window.testRunner && window.accessibilityController) {
@@ -17,3 +17,4 @@ if (window.testRunner && window.accessibilityController) {
   console.log('Canvas 2 description: ' + axCanvas2.name);
   console.log('Canvas 2 role: ' + axCanvas2.role);
 }
+done();

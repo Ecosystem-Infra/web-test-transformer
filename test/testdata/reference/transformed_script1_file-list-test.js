@@ -1,4 +1,4 @@
-setup({ single_test: true, explicit_done: false });
+setup({ single_test: true });
 
 
 console.log("Start");
@@ -27,3 +27,4 @@ function onInputFileChange(files)
 eventSender.beginDragWithFiles(["resources/UTF8.txt", "resources/UTF8-2.txt"]);
 eventSender.mouseMoveTo(10, 10);
 eventSender.mouseUp();
+done();

@@ -6,7 +6,6 @@ function addSetupNode() {
   const setupNode = babel.template.statement.ast(`
     setup({
       single_test: true,
-      explicit_done: false
     });
   `);
   return {
@@ -32,7 +31,8 @@ function transformShouldBeBool() {
           path.node.callee.name = transformBoolMap[path.node.callee.name];
 
           const newActual =
-            babel.template.expression(path.node.arguments[0].value)();
+            babel.template.expression(path.node.arguments[0].value,
+                {placeholderPattern: false})();
           path.node.arguments[0] = newActual;
         }
       },
@@ -85,7 +85,8 @@ function transformShouldBeValue() {
       CallExpression(path) {
         if (transformValueMap.hasOwnProperty(path.node.callee.name)) {
           const newActual =
-            babel.template.expression(path.node.arguments[0].value)();
+            babel.template.expression(path.node.arguments[0].value,
+                {placeholderPattern: false})();
           const newExpected = transformValueMap[path.node.callee.name].value;
           path.node.arguments = [newActual, newExpected];
 
@@ -109,9 +110,11 @@ function transformShouldBeComparator() {
       CallExpression(path) {
         if (transformComparatorMap.hasOwnProperty(path.node.callee.name)) {
           const newActual =
-            babel.template.expression(path.node.arguments[0].value)();
+            babel.template.expression(path.node.arguments[0].value,
+                {placeholderPattern: false})();
           const newExpected =
-            babel.template.expression(path.node.arguments[1].value)();
+            babel.template.expression(path.node.arguments[1].value,
+                {placeholderPattern: false})();
           path.node.arguments = [newActual, newExpected];
 
           path.node.callee.name = transformComparatorMap[path.node.callee.name];
@@ -137,6 +140,33 @@ function transformShouldBeEqualToSpecific() {
           const newActual =
             babel.template.expression(path.node.arguments[0].value)();
           path.node.arguments[0] = newActual;
+        }
+      },
+    },
+  };
+}
+
+
+const notTransformed = new Set([
+  'evalAndLog',
+  'shouldBecomeEqual', 'shouldBecomeEqualToString',
+  'shouldBeType', 'shouldBeCloseTo', 'shouldBecomeDifferent',
+  'shouldEvaluateTo', 'shouldEvaluateToSameobject',
+  'shouldNotThrow', 'shouldThrow',
+  'shouldBeNow',
+  'expectError', 'shouldHaveHadError',
+  'gc',
+  'isSuccessfulyParsed',
+  'finishJSTest', 'startWorker',
+]);
+
+function reportUntransformedFunctions() {
+  return {
+    visitor: {
+      CallExpression(path) {
+        if (notTransformed.has(path.node.callee.name)) {
+          throw Error('Untransformable function from js-test.js: ' +
+            path.node.callee.name);
         }
       },
     },
@@ -204,7 +234,7 @@ function removeDumpAsText() {
 // Returns an object
 //  - code {string}: the transformed source code string
 //  - title {string}: test title string, if parsed from description() calls
-function transformSourceCodeString(sourceCode, addSetup=true) {
+function transformSourceCodeString(sourceCode, addSetup=true, addDone=true) {
   // transformInfo is an object to be passed to plugins that return closures
   // so that we can have access to data within the transformation back in this
   // scope.
@@ -218,6 +248,7 @@ function transformSourceCodeString(sourceCode, addSetup=true) {
     removeDescriptionFactory(transformInfo),
     transformDebug,
     removeDumpAsText,
+    reportUntransformedFunctions,
   ];
 
   if (addSetup) {
@@ -229,7 +260,12 @@ function transformSourceCodeString(sourceCode, addSetup=true) {
     retainLines: true,
   });
 
-  return {code: output.code, title: transformInfo.description};
+  let outputCode = output.code;
+  if (addDone) {
+    outputCode += '\ndone();';
+  }
+
+  return {code: outputCode, title: transformInfo.description};
 }
 
 module.exports = {transformSourceCodeString};
