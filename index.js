@@ -54,6 +54,11 @@ async function main() {
     return;
   }
 
+
+  // The code below is for processing a directory (if --dir) specified.
+  // The tool outputs a summary output on transformation and verification
+  // results.
+
   const fileNames = fs.readdirSync(dir);
   const skippedTransformations = [];
   const failedTransformations = [];
