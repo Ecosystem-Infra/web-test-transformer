@@ -124,5 +124,3 @@ function transformFile(filePath, outputDir=null) {
 
 
 module.exports = {transformFile, transformResult};
-
-transformFile('./play.html', './play');

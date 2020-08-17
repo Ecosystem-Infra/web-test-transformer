@@ -112,7 +112,12 @@ function insertTitlePlugin(description) {
   };
 }
 
-
+// This function is necessary because the PostHTML parser
+// breaks the script into 2 strings
+// if '<' is used within a script since it violates
+// this code's assumption that a node's content attribute
+// has one string containing the script.
+// https://github.com/Ecosystem-Infra/web-test-transformer/issues/8 
 function concatContentPlugin() {
   return function(tree) {
     tree.match({tag: SCRIPT}, (node) => {
