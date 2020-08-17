@@ -24,6 +24,9 @@ function isBaselineAllPass(baselineFile) {
 // Assumes content_shell is built and up to date.
 // Returns true if the transformedFile passses all tests, false otherwise.
 function verifyTransformation(transformedFile, targetBuild) {
+  if (process.cwd().split('/').pop() != 'web_tests') {
+    throw Error('cwd must be chromium/src/third_party/blink/web_tests');
+  }
   const baselineFile = transformedFile.replace('.html', '-expected.txt');
   const allPass = isBaselineAllPass(baselineFile);
   if (!allPass) {

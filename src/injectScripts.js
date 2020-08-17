@@ -117,7 +117,7 @@ function insertTitlePlugin(description) {
 // if '<' is used within a script since it violates
 // this code's assumption that a node's content attribute
 // has one string containing the script.
-// https://github.com/Ecosystem-Infra/web-test-transformer/issues/8 
+// https://github.com/Ecosystem-Infra/web-test-transformer/issues/8
 function concatContentPlugin() {
   return function(tree) {
     tree.match({tag: SCRIPT}, (node) => {
