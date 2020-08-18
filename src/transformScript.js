@@ -1,5 +1,6 @@
 'use strict';
 const babel = require('@babel/core');
+const babelParser = require('@babel/parser');
 
 // addSetupNode adds the setup() call to the beginning of the script.
 function addSetupNode() {
@@ -31,8 +32,7 @@ function transformShouldBeBool() {
           path.node.callee.name = transformBoolMap[path.node.callee.name];
 
           const newActual =
-            babel.template.expression(path.node.arguments[0].value,
-                {placeholderPattern: false})();
+              babelParser.parseExpression(path.node.arguments[0].value);
           path.node.arguments[0] = newActual;
         }
       },
@@ -85,8 +85,7 @@ function transformShouldBeValue() {
       CallExpression(path) {
         if (transformValueMap.hasOwnProperty(path.node.callee.name)) {
           const newActual =
-            babel.template.expression(path.node.arguments[0].value,
-                {placeholderPattern: false})();
+              babelParser.parseExpression(path.node.arguments[0].value);
           const newExpected = transformValueMap[path.node.callee.name].value;
           path.node.arguments = [newActual, newExpected];
 
@@ -110,11 +109,9 @@ function transformShouldBeComparator() {
       CallExpression(path) {
         if (transformComparatorMap.hasOwnProperty(path.node.callee.name)) {
           const newActual =
-            babel.template.expression(path.node.arguments[0].value,
-                {placeholderPattern: false})();
+              babelParser.parseExpression(path.node.arguments[0].value);
           const newExpected =
-            babel.template.expression(path.node.arguments[1].value,
-                {placeholderPattern: false})();
+              babelParser.parseExpression(path.node.arguments[1].value);
           path.node.arguments = [newActual, newExpected];
 
           path.node.callee.name = transformComparatorMap[path.node.callee.name];
@@ -136,9 +133,8 @@ function transformShouldBeEqualToSpecific() {
       CallExpression(path) {
         if (transformEqualToMap.hasOwnProperty(path.node.callee.name)) {
           path.node.callee.name = transformEqualToMap[path.node.callee.name];
-
           const newActual =
-            babel.template.expression(path.node.arguments[0].value)();
+              babelParser.parseExpression(path.node.arguments[0].value);
           path.node.arguments[0] = newActual;
         }
       },
