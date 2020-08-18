@@ -112,6 +112,23 @@ function insertTitlePlugin(description) {
   };
 }
 
+// This function is necessary because the PostHTML parser
+// breaks the script into 2 strings
+// if '<' is used within a script since it violates
+// this code's assumption that a node's content attribute
+// has one string containing the script.
+// https://github.com/Ecosystem-Infra/web-test-transformer/issues/8
+function concatContentPlugin() {
+  return function(tree) {
+    tree.match({tag: SCRIPT}, (node) => {
+      if (node.content) {
+        node.content = [node.content.join()];
+      }
+      return node;
+    });
+  };
+}
+
 // Adds node after the first node that returns true on conditionTest
 // This function is based on posthtml's traverse() function.
 // https://github.com/posthtml/posthtml/blob/master/lib/api.js#L102
@@ -191,6 +208,7 @@ function injectScriptsIntoHTML(filePath, scripts, description, outputPath) {
   const srcInfo = {changedSrc: false};
 
   const newHTML = posthtml([
+    concatContentPlugin(),
     replaceScriptsPlugin({filePath: filePath, scripts: scripts}),
     changeSrcPlugin(srcInfo),
     insertTitlePlugin(description),

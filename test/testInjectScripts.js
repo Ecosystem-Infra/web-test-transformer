@@ -82,4 +82,20 @@ describe('#injectScriptsIntoHTML', function() {
       assert.equal(actualHTML, expectedHTML);
     });
   });
+
+  // See issue https://github.com/Ecosystem-Infra/web-test-transformer/issues/8#issue-678830679
+  context('Regression test for concatenating tree.content', function() {
+    const tmpFile = tmp.fileSync();
+    const testFile = './test/testdata/input/loose-subtree-nth.html';
+    const testDescription = 'Element.querySelector matching nth-child of loose subtree.';
+    const scripts = [''];
+    scripts.push(fs.readFileSync('./test/testdata/reference/transformed_script1_loose-subtree-nth.js', 'utf-8'));
+
+    const actualHTML = injectScriptsIntoHTML(testFile, scripts, testDescription, tmpFile.name);
+    const expectedHTML = fs.readFileSync('./test/testdata/reference/transformed_loose-subtree-nth.html', 'utf-8');
+
+    it('should return the correct HTML', function() {
+      assert.equal(actualHTML, expectedHTML);
+    });
+  });
 });
