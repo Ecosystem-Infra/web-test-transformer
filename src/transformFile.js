@@ -106,7 +106,7 @@ function transformFile(filePath, outputDir=null) {
     }
 
     // If the title is still undefined after searching scripts for definitions,
-    // use the filepath.
+    // use the filePath.
     if (title === '') {
       log('Title empty after transformation, using', filePath);
       title = filePath;
@@ -117,6 +117,29 @@ function transformFile(filePath, outputDir=null) {
     return transformResult.SUCCESS;
   } catch (err) {
     error('Error while transforming', filePath);
+    error(err);
+    return transformResult.FAIL;
+  }
+}
+
+function transformJSFile(filePath, outputDir=null) {
+  try {
+    let outputPath;
+    if (outputDir) {
+      const fileName = filePath.split('/').pop();
+      outputPath = outputDir + '/' + fileName;
+    } else {
+      outputPath = filePath;
+    }
+
+    const code = fs.readFileSync(filePath, 'utf-8');
+    const transformedCode = transformSourceCodeString(code, false, true).code;
+
+    fs.writeFileSync(outputPath, transformedCode);
+    log('Completed transformation, wrote', outputPath);
+    return transformResult.SUCCESS;
+  } catch (err) {
+    error('Error will transforming js', filePath);
     error(err);
     return transformResult.FAIL;
   }

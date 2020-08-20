@@ -55,7 +55,7 @@ async function main() {
   }
 
 
-  // The code below is for processing a directory (if --dir) specified.
+  // The code below is for processing a directory (if --dir specified).
   // The tool outputs a summary output on transformation and verification
   // results.
 
