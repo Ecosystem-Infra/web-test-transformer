@@ -3,7 +3,8 @@ const debug = require('debug');
 const flags = require('flags');
 const fs = require('fs');
 
-const {transformFile, transformResult} = require('./src/transformFile.js');
+// eslint-disable-next-line max-len
+const {transformFile, transformJsFile, transformResult} = require('./src/transformFile.js');
 const {verifyTransformation} = require('./src/verify.js');
 
 const FILE_FLAG = 'file';
@@ -38,13 +39,19 @@ if (flags.get(QUIET_FLAG)) {
 
 async function main() {
   const file = flags.get(FILE_FLAG);
-  const dir = flags.get(DIR_FLAG);
-  const outputDir = flags.get(OUTPUT_DIR_FLAG);
+  let dir = flags.get(DIR_FLAG);
+  let outputDir = flags.get(OUTPUT_DIR_FLAG);
   const targetBuild = flags.get(TARGET_BUILD_FLAG);
   const verify = flags.get(VERIFY_FLAG);
 
   if ((file && dir) || (!file && !dir)) {
     throw new Error('Specify exactly one of --file or --dir');
+  }
+
+  // Removes the trailing / from directory, if present
+  // Ex: fast/files/ -> fath/files
+  if (outputDir && outputDir.endsWith('/')) {
+    outputDir = outputDir.slice(0, -1);
   }
 
   if (file) {
@@ -59,18 +66,43 @@ async function main() {
   // The tool outputs a summary output on transformation and verification
   // results.
 
-  const fileNames = fs.readdirSync(dir);
+  // Removes the trailing / from directory, if present
+  // Ex: fast/files/ -> fath/files
+  if (dir.endsWith('/')) {
+    dir = dir.slice(0, -1);
+  }
+
+  const jsFiles = [];
+  const htmlFiles = [];
+  getFilesRecursive(dir, jsFiles, htmlFiles);
+
+  const completedTransformations = [];
   const skippedTransformations = [];
   const failedTransformations = [];
+  const successfulVerifications = [];
   const failedVerifications = [];
-  fileNames.forEach((fileName) => {
-    if (fileName.split('.').pop() !== 'html') {
-      return;
+
+  jsFiles.forEach((filePath) => {
+    const result = transformJsFile(filePath, outputDir);
+    if (result === transformResult.SUCCESS) {
+      completedTransformations.push(filePath);
+    } else if (result === transformResult.FAIL) {
+      failedTransformations.push(filePath);
+    } else if (result === transformResult.SKIP) {
+      skippedTransformations.push(filePath);
     }
-    const filePath = dir + '/' + fileName;
+  });
+
+  htmlFiles.forEach((filePath) => {
     const result = transformFile(filePath, outputDir);
     if (result === transformResult.SUCCESS) {
-      if (verify && !verifyTransformation(filePath, targetBuild)) {
+      completedTransformations.push(filePath);
+      if (!verify) {
+        return;
+      }
+      if (verifyTransformation(filePath, targetBuild)) {
+        successfulVerifications.push(filePath);
+      } else {
         failedVerifications.push(filePath);
       }
     } else if (result === transformResult.FAIL) {
@@ -79,9 +111,28 @@ async function main() {
       skippedTransformations.push(filePath);
     }
   });
+  log('Transformation Results:');
+  log('Completed Transformations:', completedTransformations);
   log('Skipped Transformations:', skippedTransformations);
   log('Failed Transformations:', failedTransformations);
+
+  log('\nVerification Results:');
+  log('Succesful Verifications:', successfulVerifications);
   log('Failed Verifications:', failedVerifications);
+}
+
+function getFilesRecursive(dir, jsFiles, htmlFiles) {
+  const fileNames = fs.readdirSync(dir);
+  fileNames.forEach((file) => {
+    const path = dir + '/' + file;
+    if (fs.statSync(path).isDirectory()) {
+      return getFilesRecursive(path, jsFiles, htmlFiles);
+    } else if (file.endsWith('.js')) {
+      jsFiles.push(path);
+    } else if (file.endsWith('.html')) {
+      htmlFiles.push(path);
+    }
+  });
 }
 
 main().catch((reason) => {

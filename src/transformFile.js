@@ -92,7 +92,7 @@ function transformFile(filePath, outputDir=null) {
       }
       transformedScripts.push(transformation.code);
       // Use the first title description that appears in the old file.
-      if (title === '') {
+      if (title === '' && transformation.title) {
         title = transformation.title;
       }
     }
@@ -122,7 +122,7 @@ function transformFile(filePath, outputDir=null) {
   }
 }
 
-function transformJSFile(filePath, outputDir=null) {
+function transformJsFile(filePath, outputDir=null) {
   try {
     let outputPath;
     if (outputDir) {
@@ -133,7 +133,7 @@ function transformJSFile(filePath, outputDir=null) {
     }
 
     const code = fs.readFileSync(filePath, 'utf-8');
-    const transformedCode = transformSourceCodeString(code, false, true).code;
+    const transformedCode = transformSourceCodeString(code, true, true).code;
 
     fs.writeFileSync(outputPath, transformedCode);
     log('Completed transformation, wrote', outputPath);
@@ -146,4 +146,4 @@ function transformJSFile(filePath, outputDir=null) {
 }
 
 
-module.exports = {transformFile, transformResult};
+module.exports = {transformFile, transformJsFile, transformResult};
