@@ -121,6 +121,26 @@ function transformShouldBeComparator() {
   };
 }
 
+function transformShouldBeType() {
+  return {
+    visitor: {
+      CallExpression(path) {
+        if (path.node.callee.name === 'shouldBeType') {
+          path.node.callee.name = 'assert_true';
+          const expression =
+              babelParser.parseExpression(path.node.arguments[0].value);
+          const type =
+              babelParser.parseExpression(path.node.arguments[1].value);
+
+          const arg =
+              babel.types.binaryExpression('instanceof', expression, type);
+          path.node.arguments = [arg];
+        }
+      },
+    },
+  };
+}
+
 
 const transformEqualToMap = {
   'shouldBeEqualToString': 'assert_equals',
@@ -142,11 +162,10 @@ function transformShouldBeEqualToSpecific() {
   };
 }
 
-
 const notTransformed = new Set([
   'evalAndLog',
   'shouldBecomeEqual', 'shouldBecomeEqualToString',
-  'shouldBeType', 'shouldBeCloseTo', 'shouldBecomeDifferent',
+  'shouldBeCloseTo', 'shouldBecomeDifferent',
   'shouldEvaluateTo', 'shouldEvaluateToSameobject',
   'shouldNotThrow', 'shouldThrow',
   'shouldBeNow',
@@ -241,6 +260,7 @@ function transformSourceCodeString(sourceCode, addSetup=true, addDone=true) {
     transformShouldBeValue,
     transformShouldBeComparator,
     transformShouldBeEqualToSpecific,
+    transformShouldBeType,
     removeDescriptionFactory(transformInfo),
     transformDebug,
     removeDumpAsText,

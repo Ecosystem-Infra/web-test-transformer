@@ -14,6 +14,8 @@ const QUIET_FLAG = 'quiet';
 const TARGET_BUILD_FLAG = 'target_build';
 const VERIFY_FLAG = 'verify';
 
+// If flags are added, deleted, or modified, UPDATE README.
+
 // Specify exactly one of --file or --dir.
 flags.defineString(FILE_FLAG, null, 'Path to test file to transform');
 flags.defineString(DIR_FLAG, null, 'Path to dir of test files to transform');
@@ -112,13 +114,18 @@ async function main() {
     }
   });
   log('Transformation Results:');
-  log('Completed Transformations:', completedTransformations);
-  log('Skipped Transformations:', skippedTransformations);
-  log('Failed Transformations:', failedTransformations);
+  log('Completed Transformations:');
+  console.log(completedTransformations.join('\n'));
+  log('Skipped Transformations:');
+  console.log(skippedTransformations.join('\n'));
+  log('Failed Transformations:');
+  console.log(failedTransformations.join('\n'));
 
   log('\nVerification Results:');
-  log('Succesful Verifications:', successfulVerifications);
-  log('Failed Verifications:', failedVerifications);
+  log('Succesful Verifications:');
+  console.log(successfulVerifications.join('\n'));
+  log('Failed Verifications:');
+  console.log(failedVerifications.join('\n'));
 }
 
 function getFilesRecursive(dir, jsFiles, htmlFiles) {
