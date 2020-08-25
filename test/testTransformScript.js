@@ -111,6 +111,13 @@ describe('#testTransformSourceCode()', function() {
       assert.equal(actual, expected);
     });
 
+    it('should transform shouldBeType()', function() {
+      const inputString = 'shouldBeType("doctype", "DocumentType");';
+      const expected = 'assert_true(doctype instanceof DocumentType);';
+      const actual = transformSourceCodeString(inputString, false, false).code;
+      assert.equal(actual, expected);
+    });
+
     it('should transform shouldBeEqualToString()', function() {
       const inputString = 'shouldBeEqualToString("\'string\' + \'string\'", "stringstring");';
       const expected = 'assert_equals(\'string\' + \'string\', "stringstring");';
