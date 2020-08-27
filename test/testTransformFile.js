@@ -4,7 +4,7 @@ const fs = require('fs');
 const tmp = require('tmp');
 tmp.setGracefulCleanup();
 
-const {transformFile, transformResult} = require('../src/transformFile.js');
+const {transformHTMLFile, transformResult} = require('../src/transformFile.js');
 
 describe('#transformFile', function() {
   let tmpDir;
@@ -20,7 +20,7 @@ describe('#transformFile', function() {
     it('should transform file-list-test.html and write output file', function() {
       const inputFile = './test/testdata/input/file-list-test.html';
       const referenceFile = './test/testdata/reference/transformed_file-list-test.html';
-      const result = transformFile(inputFile, tmpDir.name);
+      const result = transformHTMLFile(inputFile, tmpDir.name);
 
       assert.equal(result, transformResult.SUCCESS);
 
@@ -32,7 +32,7 @@ describe('#transformFile', function() {
     it('should transform canvas-description-and-role.html and write output file', function() {
       const inputFile = './test/testdata/input/canvas-description-and-role.html';
       const referenceFile = './test/testdata/reference/transformed_canvas-description-and-role.html';
-      const result = transformFile(inputFile, tmpDir.name);
+      const result = transformHTMLFile(inputFile, tmpDir.name);
 
       assert.equal(result, transformResult.SUCCESS);
 

@@ -9,6 +9,7 @@
       - [Required Flags](#required-flags)
     - [Examples](#examples)
   - [Functional Overview](#functional-overview)
+  - [Things to Look Out For](#things-to-look-out-for)
   - [Verification](#verification)
     - [All PASS Requirement](#all-pass-requirement)
   - [Issues](#issues)
@@ -73,7 +74,7 @@ appear in that directory with their original names.
 Options:
   --file: Path to test file to transform
     (default: null)
-  --dir: Path to dir of test files to transform
+  --dir: Path to dir of test files and directories to recursively transform
     (default: null)
   --output_dir: Path to dir where output files should be written. If 
     null, will overwrite input files. 
@@ -90,6 +91,8 @@ Options:
 You must specify **exactly one** of `--file` or `--dir`.
 
 ### Examples
+
+See an [example CL in linked bug](https://bugs.chromium.org/p/chromium/issues/detail?id=1120356).
 
 Transforming a directory of tests, running verification with a build called out/Debug
 
@@ -118,7 +121,7 @@ Looking for new crash logs ...
 Summarizing results ...
 The test ran as expected.
 ```
-This is for one file, but for a directory you will see a similar output for each file in the directory.
+This is for one file, but for a directory you will see a similar output for each file in the directory tree.
 At the end of the run for a directory, you will see an output similar to that below. You can then
 search the output for the file paths that fail transformation or verification to see the associated error.
 </details>
@@ -159,8 +162,9 @@ For a file, the tool will attempt to transform that file
 and then attempt to verify that file. No summary output is provided since all the output is related to the single
 file.
 
-For a directory, the tool will iterate through the files in that directory (non-recursively), only transforming
-.html tests. Each file is handled like a single file above (transformed then verified). It is not
+For a directory, the tool will iterate through the files in that directory (recursively), transforming all the .
+js files then all the .html files. Each file is handled like a single file above (transformed then verified). It 
+is not
 batch-transformed then batch-verified. This could lead to problems if files depend on each other, since the
 dependent file might be transformed first and verification would fail.
 After running on a directory, the tool provides summary output detailing the transformations that completed 
@@ -171,10 +175,12 @@ With this summary output, you can manually check files failed transformations/ve
 problem is easily fixed by a human, report bugs with this tool if the transformation should have worked, or just 
 `git checkout` those files and commit the succesful transformations to Gerrit.
 
-The tool currently only transforms .html tests. If a test src's a helper .js script, neither file will be 
-transformed and the test will be marked as skipped. If a test src's a helper .js script __and__ `js-test.js`,
-the test file will be transformed, marked as completed, but verification will fail.
-
+## Things to Look Out For
+For manual review of the transformed tests there are a few common issues that arise.
+- Check the contents of the `<title>` tag, especially if there are helper scripts involved.
+- Style, particularly indentation. 
+- In .js helper scripts, checking whether the file needs `setup()` and `done()` calls if the helper file is
+  the test and not just helper functions
 
 
 ## Verification

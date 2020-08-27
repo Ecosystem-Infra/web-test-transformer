@@ -34,7 +34,7 @@ const transformResult = {
 };
 
 /**
- * transformFile performs the full end-to-end transformation of a
+ * transformHTMLFile performs the full end-to-end transformation of a
  * legacy js-test.js HTML test file to use the testharness.js framework.
  * It extracts scripts, transforms them, then puts them back into the HTML,
  * while handling context surrounding the test title and setup() calls.
@@ -46,7 +46,7 @@ const transformResult = {
  *
  * @returns {string (enum from transformResult)} - SUCCESS, SKIP, or FAIL
  */
-function transformFile(filePath, outputDir=null) {
+function transformHTMLFile(filePath, outputDir=null) {
   try {
     // Only support .html tests, don't want to 'transform' something else.
     // This checks the file extension.
@@ -122,6 +122,23 @@ function transformFile(filePath, outputDir=null) {
   }
 }
 
+
+/**
+ * transformJSFile performs the full end-to-end transformation of a
+ * legacy js-test.js helper script to use the testharness.js framework.
+ * It direcly transforms the script and writes the output according
+ * to outputDir below.
+ * NOTE: The script will NOT add the setup() and done() calls as if this
+ * helper script is its own test. They will need to be added manually
+ * if the script is included in a .html file that doesn't have its own test.
+ *
+ * @param {string} filePath - full path to HTML test file to transform
+ * @param {string} outputDir - full path to an existing directory where
+ *  transformed files should be written. If null, overwrites the original
+ *  file. Files in outputDir will have the same name as the original file.
+ *
+ * @returns {string (enum from transformResult)} - SUCCESS, SKIP, or FAIL
+ */
 function transformJsFile(filePath, outputDir=null) {
   try {
     let outputPath;
@@ -133,7 +150,9 @@ function transformJsFile(filePath, outputDir=null) {
     }
 
     const code = fs.readFileSync(filePath, 'utf-8');
-    const transformedCode = transformSourceCodeString(code, true, true).code;
+    // Transform, adding setup() and done(), ignoring the .title property
+    // of returned object.
+    const transformedCode = transformSourceCodeString(code, false, false).code;
 
     fs.writeFileSync(outputPath, transformedCode);
     log('Completed transformation, wrote', outputPath);
@@ -146,4 +165,4 @@ function transformJsFile(filePath, outputDir=null) {
 }
 
 
-module.exports = {transformFile, transformJsFile, transformResult};
+module.exports = {transformHTMLFile, transformJsFile, transformResult};

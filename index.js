@@ -3,8 +3,7 @@ const debug = require('debug');
 const flags = require('flags');
 const fs = require('fs');
 
-// eslint-disable-next-line max-len
-const {transformFile, transformJsFile, transformResult} = require('./src/transformFile.js');
+const {transformHTMLFile, transformJsFile, transformResult} = require('./src/transformFile.js');
 const {verifyTransformation} = require('./src/verify.js');
 
 const FILE_FLAG = 'file';
@@ -18,10 +17,8 @@ const VERIFY_FLAG = 'verify';
 
 // Specify exactly one of --file or --dir.
 flags.defineString(FILE_FLAG, null, 'Path to test file to transform');
-flags.defineString(DIR_FLAG, null, 'Path to dir of test files to transform');
-// eslint-disable-next-line max-len
+flags.defineString(DIR_FLAG, null, 'Path to dir of test files and directories to recursively transform');
 flags.defineString(OUTPUT_DIR_FLAG, null, 'Path to dir where output files should be written. If null, will overwrite input files.');
-// eslint-disable-next-line max-len
 flags.defineString(TARGET_BUILD_FLAG, 'Default', 'Target build used in -t parameter for run_web_tests.py');
 flags.defineBoolean(QUIET_FLAG, false, 'Disable logging');
 flags.defineBoolean(VERIFY_FLAG, true, 'Runs web test after transforming.');
@@ -57,8 +54,14 @@ async function main() {
   }
 
   if (file) {
-    if (transformFile(file, outputDir) === transformResult.SUCCESS && verify) {
-      verifyTransformation(file, targetBuild);
+    if (file.endsWith('.html')) {
+      if (verify && transformHTMLFile(file, outputDir) === transformResult.SUCCESS) {
+        verifyTransformation(file, targetBuild);
+      }
+    } else if (file.endsWith('.js')) {
+      transformJsFile(file, outputDir);
+    } else {
+      error('Tool can only transform HTML tests or JS scripts, got:', file);
     }
     return;
   }
@@ -113,6 +116,7 @@ async function main() {
       skippedTransformations.push(filePath);
     }
   });
+
   log('Transformation Results:');
   log('Completed Transformations:');
   console.log(completedTransformations.join('\n'));
@@ -128,6 +132,10 @@ async function main() {
   console.log(failedVerifications.join('\n'));
 }
 
+// getFilesRecursive traverses the file tree starting from
+// dir and recursing downward into subdirectories,
+// MODIFYING THE PARAMETER ARRAYS with .js files and .html
+// files it finds along the way.
 function getFilesRecursive(dir, jsFiles, htmlFiles) {
   const fileNames = fs.readdirSync(dir);
   fileNames.forEach((file) => {

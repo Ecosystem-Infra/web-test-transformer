@@ -162,6 +162,21 @@ function transformShouldBeEqualToSpecific() {
   };
 }
 
+function transformImportScriptsArgument() {
+  return {
+    visitor: {
+      CallExpression(path) {
+        if (path.node.callee.name === 'importScripts' &&
+             path.node.arguments[0].value.endsWith('js-test.js')) {
+          // eslint-disable-next-line max-len
+          const newPath = path.node.arguments[0].value.replace('js-test.js', 'testharness.js');
+          path.node.arguments[0] = babel.types.stringLiteral(newPath);
+        }
+      },
+    },
+  };
+}
+
 const notTransformed = new Set([
   'evalAndLog',
   'shouldBecomeEqual', 'shouldBecomeEqualToString',
@@ -261,6 +276,7 @@ function transformSourceCodeString(sourceCode, addSetup=true, addDone=true) {
     transformShouldBeComparator,
     transformShouldBeEqualToSpecific,
     transformShouldBeType,
+    transformImportScriptsArgument,
     removeDescriptionFactory(transformInfo),
     transformDebug,
     removeDumpAsText,
