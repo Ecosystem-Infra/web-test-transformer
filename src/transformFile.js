@@ -34,7 +34,7 @@ const transformResult = {
 };
 
 /**
- * transformFile performs the full end-to-end transformation of a
+ * transformHTMLFile performs the full end-to-end transformation of a
  * legacy js-test.js HTML test file to use the testharness.js framework.
  * It extracts scripts, transforms them, then puts them back into the HTML,
  * while handling context surrounding the test title and setup() calls.
@@ -46,7 +46,7 @@ const transformResult = {
  *
  * @returns {string (enum from transformResult)} - SUCCESS, SKIP, or FAIL
  */
-function transformFile(filePath, outputDir=null) {
+function transformHTMLFile(filePath, outputDir=null) {
   try {
     // Only support .html tests, don't want to 'transform' something else.
     // This checks the file extension.
@@ -74,6 +74,7 @@ function transformFile(filePath, outputDir=null) {
     const transformedScripts = [];
     let addSetup = true;
     let title = '';
+    let gc = false;
     const originalScripts = extractScriptsFromHTML(filePath);
     for (let i=0; i < originalScripts.length; i++) {
       const script = originalScripts[i];
@@ -92,9 +93,11 @@ function transformFile(filePath, outputDir=null) {
       }
       transformedScripts.push(transformation.code);
       // Use the first title description that appears in the old file.
-      if (title === '') {
+      if (title === '' && transformation.title) {
         title = transformation.title;
       }
+
+      gc = gc || transformation.gc;
     }
 
     // This is a defensive check to ensure the transformation didn't lose
@@ -106,12 +109,12 @@ function transformFile(filePath, outputDir=null) {
     }
 
     // If the title is still undefined after searching scripts for definitions,
-    // use the filepath.
+    // use the filePath.
     if (title === '') {
       log('Title empty after transformation, using', filePath);
       title = filePath;
     }
-    injectScriptsIntoHTML(filePath, transformedScripts, title, outputPath);
+    injectScriptsIntoHTML(filePath, transformedScripts, title, outputPath, gc);
 
     log('Completed transformation, wrote', outputPath);
     return transformResult.SUCCESS;
@@ -123,4 +126,46 @@ function transformFile(filePath, outputDir=null) {
 }
 
 
-module.exports = {transformFile, transformResult};
+/**
+ * transformJSFile performs the full end-to-end transformation of a
+ * legacy js-test.js helper script to use the testharness.js framework.
+ * It direcly transforms the script and writes the output according
+ * to outputDir below.
+ * NOTE: The script will NOT add the setup() and done() calls as if this
+ * helper script is its own test. They will need to be added manually
+ * if the script is included in a .html file that doesn't have its own test.
+ *
+ * @param {string} filePath - full path to HTML test file to transform
+ * @param {string} outputDir - full path to an existing directory where
+ *  transformed files should be written. If null, overwrites the original
+ *  file. Files in outputDir will have the same name as the original file.
+ *
+ * @returns {string (enum from transformResult)} - SUCCESS, SKIP, or FAIL
+ */
+function transformJsFile(filePath, outputDir=null) {
+  try {
+    let outputPath;
+    if (outputDir) {
+      const fileName = filePath.split('/').pop();
+      outputPath = outputDir + '/' + fileName;
+    } else {
+      outputPath = filePath;
+    }
+
+    const code = fs.readFileSync(filePath, 'utf-8');
+    // Transform, adding setup() and done(), ignoring the .title property
+    // of returned object.
+    const transformedCode = transformSourceCodeString(code, false, false).code;
+
+    fs.writeFileSync(outputPath, transformedCode);
+    log('Completed transformation, wrote', outputPath);
+    return transformResult.SUCCESS;
+  } catch (err) {
+    error('Error will transforming js', filePath);
+    error(err);
+    return transformResult.FAIL;
+  }
+}
+
+
+module.exports = {transformHTMLFile, transformJsFile, transformResult};

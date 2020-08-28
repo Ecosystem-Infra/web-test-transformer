@@ -12,6 +12,7 @@ const TITLE = 'title';
 const JS_TEST = 'js-test.js';
 const TEST_HARNESS = 'testharness.js';
 const TEST_HARNESS_REPORT = 'testharnessreport.js';
+const GC = 'gc.js';
 
 const INDENTATION_REGEX = /^\n\s*$/g;
 
@@ -56,14 +57,32 @@ function changeSrcPlugin(srcInfo) {
       return node;
     });
 
+    const testharnessreportPath =
+      srcPath.replace(TEST_HARNESS, TEST_HARNESS_REPORT);
     const newSrcNode = {
       tag: SCRIPT,
-      attrs: {src: srcPath.replace(TEST_HARNESS, TEST_HARNESS_REPORT)},
+      attrs: {src: testharnessreportPath},
     };
 
     // Add testharnessreport.js src after testharness.js src
     addNode(tree, newSrcNode, (node) => {
       return node.tag === SCRIPT && node.attrs && node.attrs.src === srcPath;
+    });
+
+    if (!srcInfo.srcGC) {
+      return;
+    }
+
+    const newSrcGCNode = {
+      tag: SCRIPT,
+      attrs: {src: srcPath.replace(TEST_HARNESS, GC)},
+    };
+
+    // Add gc.js src after testharnessreport.js src
+    addNode(tree, newSrcGCNode, (node) => {
+      return node.tag === SCRIPT &&
+             node.attrs &&
+             node.attrs.src === testharnessreportPath;
     });
   };
 }
@@ -203,9 +222,13 @@ function addNodeWithinTag(tree, node, conditionTest) {
   return false;
 }
 
-function injectScriptsIntoHTML(filePath, scripts, description, outputPath) {
+function injectScriptsIntoHTML(filePath,
+    scripts,
+    description,
+    outputPath,
+    srcGC) {
   const oldHTML = fs.readFileSync(filePath, 'utf-8');
-  const srcInfo = {changedSrc: false};
+  const srcInfo = {changedSrc: false, srcGC: srcGC};
 
   const newHTML = posthtml([
     concatContentPlugin(),

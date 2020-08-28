@@ -162,6 +162,35 @@ function transformShouldBeEqualToSpecific() {
   };
 }
 
+function transformImportScriptsArgument() {
+  return {
+    visitor: {
+      CallExpression(path) {
+        if (path.node.callee.name === 'importScripts' &&
+             path.node.arguments[0].value.endsWith('js-test.js')) {
+          // eslint-disable-next-line max-len
+          const newPath = path.node.arguments[0].value.replace('js-test.js', 'testharness.js');
+          path.node.arguments[0] = babel.types.stringLiteral(newPath);
+        }
+      },
+    },
+  };
+}
+
+function detectGC(transformInfo) {
+  return function() {
+    return {
+      visitor: {
+        CallExpression(path) {
+          if (path.node.callee.name === 'gc') {
+            transformInfo.gc = true;
+          }
+        },
+      },
+    };
+  };
+}
+
 const notTransformed = new Set([
   'evalAndLog',
   'shouldBecomeEqual', 'shouldBecomeEqualToString',
@@ -170,7 +199,6 @@ const notTransformed = new Set([
   'shouldNotThrow', 'shouldThrow',
   'shouldBeNow',
   'expectError', 'shouldHaveHadError',
-  'gc',
   'isSuccessfulyParsed',
   'finishJSTest', 'startWorker',
 ]);
@@ -261,9 +289,11 @@ function transformSourceCodeString(sourceCode, addSetup=true, addDone=true) {
     transformShouldBeComparator,
     transformShouldBeEqualToSpecific,
     transformShouldBeType,
+    transformImportScriptsArgument,
     removeDescriptionFactory(transformInfo),
     transformDebug,
     removeDumpAsText,
+    detectGC(transformInfo),
     reportUntransformedFunctions,
   ];
 
@@ -281,7 +311,11 @@ function transformSourceCodeString(sourceCode, addSetup=true, addDone=true) {
     outputCode += '\ndone();';
   }
 
-  return {code: outputCode, title: transformInfo.description};
+  return {
+    code: outputCode,
+    title: transformInfo.description,
+    gc: transformInfo.gc,
+  };
 }
 
 module.exports = {transformSourceCodeString};

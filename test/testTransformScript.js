@@ -139,6 +139,13 @@ describe('#testTransformSourceCode()', function() {
       const actual = transformSourceCodeString(inputString, false, false).code;
       assert.equal(actual, expected);
     });
+
+    it('should transform importScripts() parameter', function() {
+      const inputString = 'importScripts("../../resources/js-test.js");';
+      const expected = 'importScripts("../../resources/testharness.js");';
+      const actual = transformSourceCodeString(inputString, false, false).code;
+      assert.equal(actual, expected);
+    });
   });
 
   context('File-Level Transformations', function() {

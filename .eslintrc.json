@@ -16,7 +16,7 @@
     },
     "overrides": [
         {
-            "files": ["test/*.js"],
+            "files": ["test/*.js", "index.js"],
             "rules": {
                 "max-len": 0
             }
