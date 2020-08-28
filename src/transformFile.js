@@ -74,6 +74,7 @@ function transformHTMLFile(filePath, outputDir=null) {
     const transformedScripts = [];
     let addSetup = true;
     let title = '';
+    let gc = false;
     const originalScripts = extractScriptsFromHTML(filePath);
     for (let i=0; i < originalScripts.length; i++) {
       const script = originalScripts[i];
@@ -95,6 +96,8 @@ function transformHTMLFile(filePath, outputDir=null) {
       if (title === '' && transformation.title) {
         title = transformation.title;
       }
+
+      gc = gc || transformation.gc;
     }
 
     // This is a defensive check to ensure the transformation didn't lose
@@ -111,7 +114,7 @@ function transformHTMLFile(filePath, outputDir=null) {
       log('Title empty after transformation, using', filePath);
       title = filePath;
     }
-    injectScriptsIntoHTML(filePath, transformedScripts, title, outputPath);
+    injectScriptsIntoHTML(filePath, transformedScripts, title, outputPath, gc);
 
     log('Completed transformation, wrote', outputPath);
     return transformResult.SUCCESS;

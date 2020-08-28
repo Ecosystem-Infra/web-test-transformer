@@ -177,6 +177,20 @@ function transformImportScriptsArgument() {
   };
 }
 
+function detectGC(transformInfo) {
+  return function() {
+    return {
+      visitor: {
+        CallExpression(path) {
+          if (path.node.callee.name === 'gc') {
+            transformInfo.gc = true;
+          }
+        },
+      },
+    };
+  };
+}
+
 const notTransformed = new Set([
   'evalAndLog',
   'shouldBecomeEqual', 'shouldBecomeEqualToString',
@@ -185,7 +199,6 @@ const notTransformed = new Set([
   'shouldNotThrow', 'shouldThrow',
   'shouldBeNow',
   'expectError', 'shouldHaveHadError',
-  'gc',
   'isSuccessfulyParsed',
   'finishJSTest', 'startWorker',
 ]);
@@ -280,6 +293,7 @@ function transformSourceCodeString(sourceCode, addSetup=true, addDone=true) {
     removeDescriptionFactory(transformInfo),
     transformDebug,
     removeDumpAsText,
+    detectGC(transformInfo),
     reportUntransformedFunctions,
   ];
 
@@ -297,7 +311,11 @@ function transformSourceCodeString(sourceCode, addSetup=true, addDone=true) {
     outputCode += '\ndone();';
   }
 
-  return {code: outputCode, title: transformInfo.description};
+  return {
+    code: outputCode,
+    title: transformInfo.description,
+    gc: transformInfo.gc,
+  };
 }
 
 module.exports = {transformSourceCodeString};
